@@ -8,7 +8,7 @@ namespace MovieStream.Core.Domain.Entities
         public string Name { get; set; }
         public string Description { get; set; }
         public DateTime ReleaseDate { get; set; }
-        public int SerieId { get; set; }
+        public int TvSerieId { get; set; }
 
         // Navigation properties
         public TvSerie? TvSerie { get; set; }
