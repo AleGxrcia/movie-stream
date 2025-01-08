@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MovieStream.Core.Domain.Entities;
 
-namespace MovieStream.Infrastructure.Identity.Contexts
+namespace MovieStream.Infrastructure.Persistence.Contexts
 {
     public class ApplicationDbContext : DbContext
     {
