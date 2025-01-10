@@ -9,5 +9,6 @@
         public TimeSpan Runtime { get; set; }
         public DateTime ReleaseDate { get; set; }
         public string StreamingUrl { get; set; }
+        public int SeasonId { get; set; }
     }
 }

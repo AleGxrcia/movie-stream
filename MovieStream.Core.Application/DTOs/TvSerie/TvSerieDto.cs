@@ -11,6 +11,7 @@ namespace MovieStream.Core.Application.DTOs.TvSerie
         public string? Description { get; set; }
         public string ImagePath { get; set; }
         public DateTime ReleaseDate { get; set; }
+        public int ProductionCompanyId { get; set; }
         public ICollection<SeasonDto>? Seasons { get; set; }
         public ICollection<GenreDto>? Genres { get; set; }
         public ProductionCompanyDto? ProductionCompany { get; set; }

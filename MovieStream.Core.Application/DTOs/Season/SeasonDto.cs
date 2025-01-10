@@ -9,6 +9,7 @@ namespace MovieStream.Core.Application.DTOs.Season
         public string Name { get; set; }
         public string Description { get; set; }
         public DateTime ReleaseDate { get; set; }
+        public int TvSerieId { get; set; }
         public ICollection<EpisodeDto>? Episodes { get; set; }
     }
 }
