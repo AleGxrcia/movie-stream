@@ -1,11 +1,12 @@
 ﻿using FluentValidation;
 using MovieStream.Core.Application.Enums;
+using MovieStream.Core.Application.Features.Movies.Queries.GetAllMovies;
 
-namespace MovieStream.Core.Application.Features.Movies.Queries.GetAllMovies
+namespace MovieStream.Core.Application.Features.TvSeries.Queries.GetAllTvSeries
 {
-    public class GetAllMoviesParametersValidator : AbstractValidator<GetAllMoviesParameters>
+    public class GetAllTvSeriesParametersValidator : AbstractValidator<GetAllMoviesParameters>
     {
-        public GetAllMoviesParametersValidator()
+        public GetAllTvSeriesParametersValidator()
         {
             RuleFor(x => x.SortColumn)
                 .Must(BeAValidSortColumn)

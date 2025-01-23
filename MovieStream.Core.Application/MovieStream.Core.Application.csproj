@@ -11,10 +11,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Features\TvSeries\Commands\CreateTvSerie\" />
-    <Folder Include="Features\TvSeries\Commands\DeleteTvSerieById\" />
-    <Folder Include="Features\TvSeries\Commands\UpdateTvSerie\" />
-    <Folder Include="Features\TvSeries\Queries\GetTvSerieById\" />
     <Folder Include="Services\" />
   </ItemGroup>
 
