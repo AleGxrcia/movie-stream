@@ -15,7 +15,6 @@
     <Folder Include="Features\TvSeries\Commands\DeleteTvSerieById\" />
     <Folder Include="Features\TvSeries\Commands\UpdateTvSerie\" />
     <Folder Include="Features\TvSeries\Queries\GetTvSerieById\" />
-    <Folder Include="Interfaces\Services\" />
     <Folder Include="Services\" />
   </ItemGroup>
 
