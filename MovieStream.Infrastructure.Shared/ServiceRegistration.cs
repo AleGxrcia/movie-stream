@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using MovieStream.Core.Application.Interfaces.Services;
 using MovieStream.Core.Domain.Settings;
+using MovieStream.Infrastructure.Shared.Services;
 
 namespace MovieStream.Infrastructure.Shared
 {
