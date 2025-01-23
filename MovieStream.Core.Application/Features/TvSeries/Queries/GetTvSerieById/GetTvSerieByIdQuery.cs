@@ -3,7 +3,7 @@ using MediatR;
 using MovieStream.Core.Application.DTOs.TvSerie;
 using MovieStream.Core.Application.Interfaces.Repositories;
 
-namespace MovieStream.Core.Application.Features.TvSeries.Queries.GetAllTvSeries
+namespace MovieStream.Core.Application.Features.TvSeries.Queries.GetTvSerieById
 {
     public class GetTvSerieByIdQuery : IRequest<TvSerieDto>
     {

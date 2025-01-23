@@ -9,7 +9,6 @@ namespace MovieStream.Core.Application.Features.Movies.Commands.CreateMovie
 {
     public class CreateMovieCommand : IRequest<int>
     {
-        public int? Id { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
         public TimeSpan Runtime { get; set; }
