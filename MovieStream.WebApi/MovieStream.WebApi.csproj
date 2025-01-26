@@ -19,10 +19,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Controllers\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\MovieStream.Core.Application\MovieStream.Core.Application.csproj" />
     <ProjectReference Include="..\MovieStream.Core.Domain\MovieStream.Core.Domain.csproj" />
     <ProjectReference Include="..\MovieStream.Infrastructure.Identity\MovieStream.Infrastructure.Identity.csproj" />
