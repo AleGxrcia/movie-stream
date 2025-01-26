@@ -213,6 +213,25 @@ namespace MovieStream.Infrastructure.Identity.Services
             return response;
         }
 
+        public async Task<string> ConfirmAccountAsync(string userId, string token)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return $"No accounts registered with this user";
+            }
+
+            token = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(token));
+            var result = await _userManager.ConfirmEmailAsync(user, token);
+            if (!result.Succeeded)
+            {
+                return $"An error occurred while confirming {user.Email}.";
+
+            }
+
+            return $"Account confirmed for {user.Email}. You can now use the app";
+        }
+
         public async Task<ForgotPasswordResponse> ForgotPasswordAsync(ForgotPasswordRequest request, string origin)
         {
             ForgotPasswordResponse response = new()

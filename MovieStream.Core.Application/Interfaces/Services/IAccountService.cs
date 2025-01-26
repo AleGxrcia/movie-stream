@@ -8,6 +8,7 @@ namespace MovieStream.Core.Application.Interfaces.Services
         Task<RegisterResponse> RegisterBasicUserAsync(RegisterRequest request, string origin);
         Task<RegisterResponse> RegisterAdminUserAsync(RegisterRequest request, string origin);
         Task<RegisterResponse> RegisterContentManagerUserAsync(RegisterRequest request, string origin);
+        Task<string> ConfirmAccountAsync(string userId, string token);
         Task<ForgotPasswordResponse> ForgotPasswordAsync(ForgotPasswordRequest request, string origin);
         Task<ResetPasswordResponse> ResetPasswordAsync(ResetPasswordRequest request);
     }
