@@ -1,10 +1,16 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.IdentityModel.Tokens;
 using MovieStream.Core.Application.DTOs.Account;
 using MovieStream.Core.Application.Enums;
 using MovieStream.Core.Application.Interfaces.Services;
+using MovieStream.Core.Domain.Settings;
 using MovieStream.Infrastructure.Identity.Entities;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Text;
+using Microsoft.Extensions.Options;
+using System.Security.Cryptography;
 
 namespace MovieStream.Infrastructure.Identity.Services
 {
@@ -13,12 +19,15 @@ namespace MovieStream.Infrastructure.Identity.Services
         private readonly UserManager<AppUser> _userManager;
         private readonly SignInManager<AppUser> _signInManager;
         private readonly IEmailService _emailService;
+        private readonly JwtSettings _jwtSettings;
 
-        public AccountService(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, IEmailService emailService)
+        public AccountService(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager,
+            IEmailService emailService, IOptions<JwtSettings> jwtSettings)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _emailService = emailService;
+            _jwtSettings = jwtSettings.Value;
         }
 
         public async Task<AuthenticationResponse> AuthenticateAsync(AuthenticationRequest request)
@@ -41,6 +50,8 @@ namespace MovieStream.Infrastructure.Identity.Services
                 return response;
             }
 
+            JwtSecurityToken jwtSecurityToken = await GenerateJWToken(user);
+
             response.Id = user.Id;
             response.Email = user.Email;
             response.UserName = user.UserName;
@@ -48,6 +59,9 @@ namespace MovieStream.Infrastructure.Identity.Services
             var rolesList = await _userManager.GetRolesAsync(user).ConfigureAwait(false);
             response.Roles = rolesList.ToList();
             response.IsVerified = user.EmailConfirmed;
+            response.JWToken = new JwtSecurityTokenHandler().WriteToken(jwtSecurityToken);
+            var refreshToken = GenerateRefreshToken();
+            response.RefreshToken = refreshToken.Token;
 
             return response;
         }
@@ -256,6 +270,43 @@ namespace MovieStream.Infrastructure.Identity.Services
             return response;
         }
 
+        private async Task<JwtSecurityToken> GenerateJWToken(AppUser user)
+        {
+            var userClaims = await _userManager.GetClaimsAsync(user);
+
+            var roles = await _userManager.GetRolesAsync(user);
+
+            var roleClaims = new List<Claim>();
+            roleClaims.AddRange(roles.Select(role => new Claim("roles", role)));
+
+            var claims = new[]
+            {
+                new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
+
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+
+                new Claim(JwtRegisteredClaimNames.Email, user.Email),
+
+                new Claim("uid", user.Id)
+            }
+            .Union(userClaims)
+            .Union(roleClaims);
+
+            var symmetricSecurityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Key));
+
+            var signingCredential = new SigningCredentials(symmetricSecurityKey, SecurityAlgorithms.HmacSha256);
+
+            var jwtSecurityToken = new JwtSecurityToken(
+                issuer: _jwtSettings.Issuer,
+                audience: _jwtSettings.Audience,
+                claims: claims,
+                expires: DateTime.UtcNow.AddMinutes(_jwtSettings.DurationInMinutes),
+                signingCredentials: signingCredential
+            );
+
+            return jwtSecurityToken;
+        }
+
         private async Task<string> SendVerificationEmailUri(AppUser user, string origin)
         {
             var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
@@ -277,6 +328,21 @@ namespace MovieStream.Infrastructure.Identity.Services
             var verificationUri = QueryHelpers.AddQueryString(uri.ToString(), "token", code);
 
             return verificationUri;
+        }
+
+        private static RefreshToken GenerateRefreshToken()
+        {
+            return new RefreshToken
+            {
+                Token = RandomTokenString(),
+                Expires = DateTime.UtcNow.AddDays(7),
+                Created = DateTime.UtcNow,
+            };
+        }
+
+        private static string RandomTokenString(int counter = 40)
+        {
+            return Convert.ToBase64String(RandomNumberGenerator.GetBytes(counter));
         }
     }
 }

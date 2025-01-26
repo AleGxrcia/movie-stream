@@ -11,5 +11,9 @@ namespace MovieStream.Core.Application.DTOs.Account
         public bool IsVerified { get; set; }
         public bool HasError { get; set; }
         public string? Error { get; set; }
+        public string? JWToken { get; set; }
+
+        [JsonIgnore]
+        public string? RefreshToken { get; set; }
     }
 }
