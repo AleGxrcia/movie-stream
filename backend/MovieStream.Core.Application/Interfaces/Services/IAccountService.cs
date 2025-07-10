@@ -11,5 +11,7 @@ namespace MovieStream.Core.Application.Interfaces.Services
         Task<string> ConfirmAccountAsync(string userId, string token);
         Task<ForgotPasswordResponse> ForgotPasswordAsync(ForgotPasswordRequest request, string origin);
         Task<ResetPasswordResponse> ResetPasswordAsync(ResetPasswordRequest request);
+        Task<AuthenticationResponse> RefreshTokenAsync(string refreshToken);
+        Task<bool> RevokeTokenAsync(string token);
     }
 }
