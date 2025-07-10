@@ -6,5 +6,6 @@ namespace MovieStream.Infrastructure.Identity.Entities
     {
         public string FirstName { get; set; }
         public string LastName { get; set; }
+        public List<RefreshToken> RefreshTokens { get; set; } = new();
     }
 }

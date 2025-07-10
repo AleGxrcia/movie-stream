@@ -9,6 +9,8 @@ namespace MovieStream.Infrastructure.Identity.Contexts
     {
         public IdentityContext(DbContextOptions<IdentityContext> options) : base(options) { }
 
+        public DbSet<RefreshToken> RefreshTokens { get; set; }
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
@@ -32,6 +34,16 @@ namespace MovieStream.Infrastructure.Identity.Contexts
             builder.Entity<IdentityUserLogin<string>>(entity =>
             {
                 entity.ToTable("UserLogins");
+            });
+
+            builder.Entity<RefreshToken>(entity =>
+            {
+                entity.ToTable("RefreshTokens");
+                entity.HasKey(rt => rt.Id);
+
+                entity.HasOne(rt => rt.AppUser)
+                    .WithMany(u => u.RefreshTokens)
+                    .HasForeignKey(rt => rt.AppUserId);
             });
         }
     }
