@@ -1,0 +1,79 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirm Your Account</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            color: #333333;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        .header {
+            background-color: #007bff;
+            color: #ffffff;
+            padding: 10px 20px;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+            text-align: center;
+        }
+
+        .content {
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .button {
+            display: inline-block;
+            background-color: #28a745;
+            color: #ffffff;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.9em;
+            color: #777777;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Welcome to MovieStream!</h1>
+        </div>
+        <div class="content">
+            <p>Hello {{UserName}},</p>
+            <p>Thank you for registering at MovieStream. Please confirm your email address to complete your registration and activate your account.</p>
+            <p>
+                <a href="{{VerificationUrl}}" class="button">Confirm Your Email</a>
+            </p>
+            <p>If the button above does not work, please copy and paste the following link into your web browser:</p>
+            <p><a href="{{VerificationUrl}}">{{VerificationUrl}}</a></p>
+            <p>If you did not create an account, no further action is required.</p>
+            <p>Thanks,<br>The MovieStream Team</p>
+        </div>
+        <div class="footer">
+            <p>&copy; {{CurrentYear}} MovieStream. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>
