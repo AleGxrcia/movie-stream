@@ -315,7 +315,7 @@ namespace MovieStream.Infrastructure.Identity.Services
                 {
                     { "UserName", user.UserName },
                     { "ResetUrl", resetTokenUri },
-                    { "ExpirationHours", "15 Minutes" } // TODO: Hacer esto configurable.
+                    { "ExpirationHours", "2" } // TODO: Hacer esto configurable.
                 }
             });
 
@@ -393,7 +393,7 @@ namespace MovieStream.Infrastructure.Identity.Services
             var route = "reset-password";
             var uri = new Uri(string.Concat($"{origin}/", route));
             var verificationUri = QueryHelpers.AddQueryString(uri.ToString(), "token", code);
-            verificationUri = QueryHelpers.AddQueryString(uri.ToString(), "email", user.Email);
+            verificationUri = QueryHelpers.AddQueryString(verificationUri, "email", user.Email);
             return verificationUri;
         }
 
