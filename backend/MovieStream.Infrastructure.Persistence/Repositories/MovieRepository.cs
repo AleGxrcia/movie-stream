@@ -1,11 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using MovieStream.Core.Application.Common.Parameters.Movies;
 using MovieStream.Core.Application.Features.Movies.Queries.GetAllMovies;
 using MovieStream.Core.Application.Interfaces.Repositories;
-using MovieStream.Core.Application.QueryObjects;
-using MovieStream.Core.Application.QueryObjects.Filters;
-using MovieStream.Core.Application.QueryObjects.Sorts;
+using MovieStream.Core.Application.Wrappers;
 using MovieStream.Core.Domain.Entities;
 using MovieStream.Infrastructure.Persistence.Contexts;
+using MovieStream.Infrastructure.Persistence.Extensions;
 
 namespace MovieStream.Infrastructure.Persistence.Repositories
 {
@@ -18,31 +18,24 @@ namespace MovieStream.Infrastructure.Persistence.Repositories
             _dbContext = dbContext;
         }
 
-        public async Task<(List<Movie>, int totalCount)> GetAllWithFilters(GetAllMoviesParameters filters)
+        public async Task<PagedList<Movie>> GetAllWithFilters(MovieParameters parameters)
         {
-            var query = _dbContext.Movies
-                .AsQueryable()
+            IQueryable<Movie> moviesQuery = _dbContext.Movies
                 .AsNoTracking()
-                .Include(x => x.Genres)
-                .Include(x => x.ProductionCompany);
+                .Include(m => m.Genres)
+                .Include(m => m.ProductionCompany);
 
-            if (!string.IsNullOrEmpty(filters.FilterBy) && !string.IsNullOrEmpty(filters.FilterValue))
-            {
-                 query.FilterMoviesBy(filters.FilterBy, filters.FilterValue);
-            }
+            moviesQuery = moviesQuery.FilterMovies(parameters);
+            moviesQuery = moviesQuery.SearchMovies(parameters.SearchTerm);
 
-            if (!string.IsNullOrEmpty(filters.SortColumn) && !string.IsNullOrEmpty(filters.SortOrder))
-            {
-                query.OrderMoviesBy(filters.SortColumn, filters.SortOrder);
-            }
-
-            var totalCount = await query.CountAsync();
-
-            var movies = await query
-                .Page(filters.PageNumber, filters.PageSize)
+            var totalCount = await moviesQuery.CountAsync();
+            
+            var itemsForCurrentPage = await moviesQuery
+                .Skip((parameters.PageNumber - 1) * parameters.PageSize)
+                .Take(parameters.PageSize)
                 .ToListAsync();
 
-            return (movies, totalCount);
+            return PagedList<Movie>.ToPagedList(itemsForCurrentPage, totalCount, parameters.PageNumber, parameters.PageSize);
         }
 
         public async Task<Movie?> GetByIdWithInclude(int id)
