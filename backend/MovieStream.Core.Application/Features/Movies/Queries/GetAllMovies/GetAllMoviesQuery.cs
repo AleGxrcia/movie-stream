@@ -1,21 +1,18 @@
 ﻿using AutoMapper;
 using MediatR;
+using MovieStream.Core.Application.Common.Parameters.Movies;
 using MovieStream.Core.Application.DTOs.Movie;
 using MovieStream.Core.Application.Interfaces.Repositories;
+using MovieStream.Core.Application.Wrappers;
 
 namespace MovieStream.Core.Application.Features.Movies.Queries.GetAllMovies
 {
-    public class GetAllMoviesQuery : IRequest<PagedResponse<MovieDto>>
+    public class GetAllMoviesQuery : IRequest<Response<PagedList<MovieDto>>>
     {
-        public string? SortColumn { get; set; }
-        public string? SortOrder { get; set; }
-        public string? FilterBy { get; set; }
-        public string? FilterValue { get; set; }
-        public int PageNumber { get; set; }
-        public int PageSize { get; set; }
+        public MovieParameters Parameters { get; set; }
     }
 
-    public class GetAllMoviesQueryHandler : IRequestHandler<GetAllMoviesQuery, PagedResponse<MovieDto>>
+    public class GetAllMoviesQueryHandler : IRequestHandler<GetAllMoviesQuery, Response<PagedList<MovieDto>>>
     {
         private readonly IMovieRepository _movieRepository;
         private readonly IMapper _mapper;
@@ -26,30 +23,34 @@ namespace MovieStream.Core.Application.Features.Movies.Queries.GetAllMovies
             _mapper = mapper;
         }
 
-        public async Task<PagedResponse<MovieDto>> Handle(GetAllMoviesQuery request, CancellationToken cancellationToken)
+        public async Task<Response<PagedList<MovieDto>>> Handle(GetAllMoviesQuery request, CancellationToken cancellationToken)
         {
-            var filters = _mapper.Map<GetAllMoviesParameters>(request);
+            var filters = request.Parameters;
             var moviesPagedResponse = await GetAllDtoWithFilters(filters);
 
             if (moviesPagedResponse != null && (moviesPagedResponse.Data == null || !moviesPagedResponse.Data.Any()))
             {
-                return new PagedResponse<MovieDto>(new List<MovieDto>(), filters.PageNumber, filters.PageSize, 0);
+                return new Response<PagedList<MovieDto>>(
+                    new PagedList<MovieDto>(new List<MovieDto>(), 0, filters.PageNumber, filters.PageSize),
+                    "No movies found");
             }
 
             if (moviesPagedResponse == null)
             {
-                return new PagedResponse<MovieDto>(new List<MovieDto>(), filters.PageNumber, filters.PageSize, 0);
+                return new Response<PagedList<MovieDto>>(
+                    new PagedList<MovieDto>(new List<MovieDto>(), 0, filters.PageNumber, filters.PageSize),
+                    "Error retrieving movies");
             }
 
-            return moviesPagedResponse;
+            return new Response<PagedList<MovieDto>>(moviesPagedResponse);
         }
 
-        private async Task<PagedResponse<MovieDto>> GetAllDtoWithFilters(GetAllMoviesParameters filters)
+        private async Task<PagedList<MovieDto>> GetAllDtoWithFilters(MovieParameters filters)
         {
-            var (movieList, totalCount) = await _movieRepository.GetAllWithFilters(filters);
+            var movieList = await _movieRepository.GetAllWithFilters(filters);
             var movieDtoList = _mapper.Map<List<MovieDto>>(movieList);
 
-            return new PagedResponse<MovieDto>(movieDtoList, filters.PageNumber, filters.PageSize, totalCount);
+            return new PagedList<MovieDto>(movieDtoList, ,, totalCount);
         }
     }
 }
