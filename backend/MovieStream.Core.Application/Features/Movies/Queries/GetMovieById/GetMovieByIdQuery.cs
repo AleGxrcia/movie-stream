@@ -2,15 +2,16 @@
 using MediatR;
 using MovieStream.Core.Application.DTOs.Movie;
 using MovieStream.Core.Application.Interfaces.Repositories;
+using MovieStream.Core.Application.Wrappers;
 
 namespace MovieStream.Core.Application.Features.Movies.Queries.GetMovieById
 {
-    public class GetMovieByIdQuery : IRequest<MovieDto>
+    public class GetMovieByIdQuery : IRequest<Response<MovieDto>>
     {
         public int Id { get; set; }
     }
 
-    public class GetMovieByIdQueryHandler : IRequestHandler<GetMovieByIdQuery, MovieDto>
+    public class GetMovieByIdQueryHandler : IRequestHandler<GetMovieByIdQuery, Response<MovieDto>>
     {
         private readonly IMovieRepository _movieRepository;
         private readonly IMapper _mapper;
@@ -21,11 +22,15 @@ namespace MovieStream.Core.Application.Features.Movies.Queries.GetMovieById
             _mapper = mapper;
         }
 
-        public async Task<MovieDto> Handle(GetMovieByIdQuery request, CancellationToken cancellationToken)
+        public async Task<Response<MovieDto>> Handle(GetMovieByIdQuery request, CancellationToken cancellationToken)
         {
-            var movie = await GetByIdDto(request.Id);
-            if (movie == null) throw new Exception("Movie not found.");
-            return movie;
+            var movieDto = await GetByIdDto(request.Id);
+            if (movieDto == null)
+            {
+                return new Response<MovieDto>($"Movie with Id {request.Id} not found.");
+            }
+
+            return new Response<MovieDto>(movieDto);
         }
 
         private async Task<MovieDto> GetByIdDto(int id)

@@ -1,14 +1,15 @@
 ﻿using MediatR;
 using MovieStream.Core.Application.Interfaces.Repositories;
+using MovieStream.Core.Application.Wrappers;
 
 namespace MovieStream.Core.Application.Features.Movies.Commands.DeleteMovieById
 {
-    public class DeleteMovieByIdCommand : IRequest<int>
+    public class DeleteMovieByIdCommand : IRequest<Response<int>>
     {
         public int Id { get; set; }
     }
 
-    public class DeleteMovieByIdCommandHandler : IRequestHandler<DeleteMovieByIdCommand, int>
+    public class DeleteMovieByIdCommandHandler : IRequestHandler<DeleteMovieByIdCommand, Response<int>>
     {
         private readonly IMovieRepository _movieRepository;
 
@@ -17,7 +18,7 @@ namespace MovieStream.Core.Application.Features.Movies.Commands.DeleteMovieById
             _movieRepository = movieRepository;
         }
 
-        public async Task<int> Handle(DeleteMovieByIdCommand command, CancellationToken cancellationToken)
+        public async Task<Response<int>> Handle(DeleteMovieByIdCommand command, CancellationToken cancellationToken)
         {
             var movie = await _movieRepository.GetByIdAsync(command.Id);
 
@@ -25,7 +26,7 @@ namespace MovieStream.Core.Application.Features.Movies.Commands.DeleteMovieById
 
             await _movieRepository.DeleteAsync(movie);
 
-            return movie.Id;
+            return new Response<int>(movie.Id);
         }
     }
 }
