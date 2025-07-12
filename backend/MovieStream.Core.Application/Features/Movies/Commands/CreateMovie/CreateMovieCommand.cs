@@ -2,12 +2,13 @@
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using MovieStream.Core.Application.Interfaces.Repositories;
+using MovieStream.Core.Application.Wrappers;
 using MovieStream.Core.Domain.Entities;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace MovieStream.Core.Application.Features.Movies.Commands.CreateMovie
 {
-    public class CreateMovieCommand : IRequest<int>
+    public class CreateMovieCommand : IRequest<Response<int>>
     {
         public string Name { get; set; }
         public string Description { get; set; }
@@ -22,7 +23,7 @@ namespace MovieStream.Core.Application.Features.Movies.Commands.CreateMovie
         public IFormFile ImageFile { get; set; }
     }
 
-    public class CreateMovieCommandHandler : IRequestHandler<CreateMovieCommand, int>
+    public class CreateMovieCommandHandler : IRequestHandler<CreateMovieCommand, Response<int>>
     {
         private readonly IMovieRepository _movieRepository;
         private readonly IMapper _mapper;
@@ -33,11 +34,11 @@ namespace MovieStream.Core.Application.Features.Movies.Commands.CreateMovie
             _mapper = mapper;
         }
 
-        public async Task<int> Handle(CreateMovieCommand command, CancellationToken cancellationToken)
+        public async Task<Response<int>> Handle(CreateMovieCommand command, CancellationToken cancellationToken)
         {
             var movie = _mapper.Map<Movie>(command);
             movie = await _movieRepository.AddAsync(movie);
-            return movie.Id;
+            return new Response<int>(movie.Id);
         }
     }
 }
