@@ -1,6 +1,8 @@
 ﻿using MediatR;
+using MovieStream.Core.Application.Exceptions;
 using MovieStream.Core.Application.Interfaces.Repositories;
 using MovieStream.Core.Application.Wrappers;
+using System.Net;
 
 namespace MovieStream.Core.Application.Features.Movies.Commands.DeleteMovieById
 {
@@ -22,10 +24,9 @@ namespace MovieStream.Core.Application.Features.Movies.Commands.DeleteMovieById
         {
             var movie = await _movieRepository.GetByIdAsync(command.Id);
 
-            if (movie == null) throw new Exception("Movie not found.");
+            if (movie == null) throw new ApiException("Movie not found.", (int)HttpStatusCode.NotFound);
 
             await _movieRepository.DeleteAsync(movie);
-
             return new Response<int>(movie.Id);
         }
     }

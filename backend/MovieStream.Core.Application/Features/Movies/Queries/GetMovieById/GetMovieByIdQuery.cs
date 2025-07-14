@@ -1,8 +1,10 @@
 ﻿using AutoMapper;
 using MediatR;
 using MovieStream.Core.Application.DTOs.Movie;
+using MovieStream.Core.Application.Exceptions;
 using MovieStream.Core.Application.Interfaces.Repositories;
 using MovieStream.Core.Application.Wrappers;
+using System.Net;
 
 namespace MovieStream.Core.Application.Features.Movies.Queries.GetMovieById
 {
@@ -25,10 +27,7 @@ namespace MovieStream.Core.Application.Features.Movies.Queries.GetMovieById
         public async Task<Response<MovieDto>> Handle(GetMovieByIdQuery request, CancellationToken cancellationToken)
         {
             var movieDto = await GetByIdDto(request.Id);
-            if (movieDto == null)
-            {
-                return new Response<MovieDto>($"Movie with Id {request.Id} not found.");
-            }
+            if (movieDto == null) throw new ApiException("Movie not found.", (int)HttpStatusCode.NotFound);
 
             return new Response<MovieDto>(movieDto);
         }
