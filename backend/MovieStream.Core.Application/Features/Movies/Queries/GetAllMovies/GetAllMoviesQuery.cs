@@ -2,8 +2,10 @@
 using MediatR;
 using MovieStream.Core.Application.Common.Parameters.Movies;
 using MovieStream.Core.Application.DTOs.Movie;
+using MovieStream.Core.Application.Exceptions;
 using MovieStream.Core.Application.Interfaces.Repositories;
 using MovieStream.Core.Application.Wrappers;
+using System.Net;
 
 namespace MovieStream.Core.Application.Features.Movies.Queries.GetAllMovies
 {
@@ -28,9 +30,9 @@ namespace MovieStream.Core.Application.Features.Movies.Queries.GetAllMovies
             var filters = request.Parameters;
             var pagedMoviesDto = await GetAllDtoWithFilters(filters);
 
-            if (!pagedMoviesDto.Any()) 
+            if (pagedMoviesDto == null || pagedMoviesDto.Count == 0)
             {
-                return new Response<PagedList<MovieDto>>(pagedMoviesDto, "No movies found");
+                throw new ApiException("Movies not found.", (int)HttpStatusCode.NotFound);
             }
 
             return new Response<PagedList<MovieDto>>(pagedMoviesDto);

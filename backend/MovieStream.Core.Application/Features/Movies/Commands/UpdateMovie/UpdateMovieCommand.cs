@@ -1,10 +1,12 @@
 ﻿using AutoMapper;
 using MediatR;
 using Microsoft.AspNetCore.Http;
+using MovieStream.Core.Application.Exceptions;
 using MovieStream.Core.Application.Interfaces.Repositories;
 using MovieStream.Core.Application.Wrappers;
 using MovieStream.Core.Domain.Entities;
 using Swashbuckle.AspNetCore.Annotations;
+using System.Net;
 
 namespace MovieStream.Core.Application.Features.Movies.Commands.UpdateMovie
 {
@@ -39,14 +41,12 @@ namespace MovieStream.Core.Application.Features.Movies.Commands.UpdateMovie
         {
             var movie = await _movieRepository.GetByIdAsync(command.Id);
 
-            if (movie == null) throw new Exception("Movie not found.");
+            if (movie == null) throw new ApiException("Movie not found.", (int)HttpStatusCode.NotFound);
 
             movie = _mapper.Map<Movie>(command);
-
             await _movieRepository.UpdateAsync(movie, movie.Id);
 
             var movieResponse = _mapper.Map<MovieUpdateResponse>(movie);
-
             return new Response<MovieUpdateResponse>(movieResponse);
         }
     }
