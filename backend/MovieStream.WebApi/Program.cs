@@ -1,4 +1,3 @@
-using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Identity;
 using MovieStream.Core.Application;
 using MovieStream.Infrastructure.Identity;
@@ -6,7 +5,6 @@ using MovieStream.Infrastructure.Identity.Entities;
 using MovieStream.Infrastructure.Identity.Seeds;
 using MovieStream.Infrastructure.Persistence;
 using MovieStream.Infrastructure.Shared;
-using Microsoft.AspNetCore.RateLimiting;
 using MovieStream.WebApi.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -66,6 +64,7 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseSwaggerExtension();
+app.UseErrorHandlingMiddleware();
 app.UseHealthChecks("/health");
 
 app.MapControllers();
