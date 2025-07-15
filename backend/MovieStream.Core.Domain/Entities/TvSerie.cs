@@ -11,7 +11,7 @@ namespace MovieStream.Core.Domain.Entities
         public int ProductionCompanyId { get; set; }
 
         // Navigation properties
-        public ICollection<Season>? Seasons { get; set; }
+        public ICollection<Season> Seasons { get; set; } = new List<Season>();
         public ICollection<Genre>? Genres { get; set; }
         public ProductionCompany? ProductionCompany { get; set; }
     }
