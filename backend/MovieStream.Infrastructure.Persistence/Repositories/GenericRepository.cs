@@ -1,5 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using MovieStream.Core.Application.Common.Parameters.Base;
 using MovieStream.Core.Application.Interfaces.Repositories;
+using MovieStream.Core.Application.Wrappers;
 using MovieStream.Infrastructure.Persistence.Contexts;
 
 namespace MovieStream.Infrastructure.Persistence.Repositories
@@ -36,6 +38,22 @@ namespace MovieStream.Infrastructure.Persistence.Repositories
         public virtual async Task<List<Entity>> GetAllAsync()
         {
             return await _dbContext.Set<Entity>().ToListAsync();
+        }
+
+        public virtual async Task<PagedList<Entity>> GetAllWithFilters(RequestParameters parameters)
+        {
+            var query = _dbContext.Set<Entity>()
+                .AsQueryable()
+                .AsNoTracking();
+
+            var totalCount = await query.CountAsync();
+
+            var itemsForCurrentPage = await query
+                .Skip((parameters.PageNumber - 1) * parameters.PageSize)
+                .Take(parameters.PageSize)
+                .ToListAsync();
+
+            return PagedList<Entity>.ToPagedList(itemsForCurrentPage, totalCount, parameters.PageNumber, parameters.PageSize);
         }
 
         public virtual async Task<List<Entity>> GetAllWithIncludeAsync(List<string> properties)
