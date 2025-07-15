@@ -12,6 +12,6 @@ namespace MovieStream.Core.Domain.Entities
 
         // Navigation properties
         public TvSerie? TvSerie { get; set; }
-        public ICollection<Episode>? Episodes { get; set; }
+        public ICollection<Episode> Episodes { get; set; } = new List<Episode>();
     }
 }
