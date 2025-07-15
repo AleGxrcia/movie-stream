@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using MovieStream.Core.Application.Common.Parameters.Base;
 using MovieStream.Core.Application.Common.Parameters.Movies;
-using MovieStream.Core.Application.Features.Movies.Queries.GetAllMovies;
 using MovieStream.Core.Application.Interfaces.Repositories;
 using MovieStream.Core.Application.Wrappers;
 using MovieStream.Core.Domain.Entities;
@@ -18,24 +18,26 @@ namespace MovieStream.Infrastructure.Persistence.Repositories
             _dbContext = dbContext;
         }
 
-        public async Task<PagedList<Movie>> GetAllWithFilters(MovieParameters parameters)
+        public override async Task<PagedList<Movie>> GetAllWithFilters(RequestParameters parameters)
         {
+            var movieParams = parameters as MovieParameters;
+
             IQueryable<Movie> moviesQuery = _dbContext.Movies
                 .AsNoTracking()
                 .Include(m => m.Genres)
                 .Include(m => m.ProductionCompany);
 
-            moviesQuery = moviesQuery.FilterMovies(parameters);
-            moviesQuery = moviesQuery.SearchMovies(parameters.SearchTerm);
+            moviesQuery = moviesQuery.FilterMovies(movieParams);
+            moviesQuery = moviesQuery.SearchMovies(movieParams.SearchTerm);
 
             var totalCount = await moviesQuery.CountAsync();
             
             var itemsForCurrentPage = await moviesQuery
-                .Skip((parameters.PageNumber - 1) * parameters.PageSize)
-                .Take(parameters.PageSize)
+                .Skip((movieParams.PageNumber - 1) * movieParams.PageSize)
+                .Take(movieParams.PageSize)
                 .ToListAsync();
 
-            return PagedList<Movie>.ToPagedList(itemsForCurrentPage, totalCount, parameters.PageNumber, parameters.PageSize);
+            return PagedList<Movie>.ToPagedList(itemsForCurrentPage, totalCount, movieParams.PageNumber, movieParams.PageSize);
         }
 
         public async Task<Movie?> GetByIdWithInclude(int id)

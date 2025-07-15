@@ -1,14 +1,9 @@
-﻿using MovieStream.Core.Application.Common.Parameters.Movies;
-using MovieStream.Core.Application.Features.Movies.Queries.GetAllMovies;
-using MovieStream.Core.Application.Wrappers;
-using MovieStream.Core.Domain.Entities;
+﻿using MovieStream.Core.Domain.Entities;
 
 namespace MovieStream.Core.Application.Interfaces.Repositories
 {
     public interface IMovieRepository : IGenericRepository<Movie>
     {
-        //Task<(List<Movie>, int totalCount)> GetAllWithFilters(GetAllMoviesParameters filters);
-        Task<PagedList<Movie>> GetAllWithFilters(MovieParameters parameters);
         Task<Movie?> GetByIdWithInclude(int id);
     }
 }
