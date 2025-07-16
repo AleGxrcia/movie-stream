@@ -1,13 +1,16 @@
 ﻿using AutoMapper;
 using MediatR;
 using Microsoft.AspNetCore.Http;
+using MovieStream.Core.Application.Exceptions;
 using MovieStream.Core.Application.Interfaces.Repositories;
+using MovieStream.Core.Application.Wrappers;
 using MovieStream.Core.Domain.Entities;
 using Swashbuckle.AspNetCore.Annotations;
+using System.Net;
 
 namespace MovieStream.Core.Application.Features.TvSeries.Commands.UpdateTvSerie
 {
-    public class UpdateTvSerieCommand : IRequest<TvSerieUpdateResponse>
+    public class UpdateTvSerieCommand : IRequest<Response<TvSerieUpdateResponse>>
     {
         public int Id { get; set; }
         public string Name { get; set; }
@@ -22,7 +25,8 @@ namespace MovieStream.Core.Application.Features.TvSeries.Commands.UpdateTvSerie
         public IFormFile ImageFile { get; set; }
     }
 
-    public class UpdateTvSerieCommandHandler : IRequestHandler<UpdateTvSerieCommand, TvSerieUpdateResponse>
+    public class UpdateTvSerieCommandHandler : IRequestHandler<UpdateTvSerieCommand,
+        Response<TvSerieUpdateResponse>>
     {
         private readonly ITvSerieRepository _tvSerieRepository;
         private readonly IMapper _mapper;
@@ -33,11 +37,12 @@ namespace MovieStream.Core.Application.Features.TvSeries.Commands.UpdateTvSerie
             _mapper = mapper;
         }
 
-        public async Task<TvSerieUpdateResponse> Handle(UpdateTvSerieCommand command, CancellationToken cancellationToken)
+        public async Task<Response<TvSerieUpdateResponse>> Handle(UpdateTvSerieCommand command,
+            CancellationToken cancellationToken)
         {
             var tvSerie = await _tvSerieRepository.GetByIdAsync(command.Id);
 
-            if (tvSerie == null) throw new Exception("Tv Serie not found.");
+            if (tvSerie == null) throw new ApiException("Tv Serie not found.", (int)HttpStatusCode.NotFound);
 
             tvSerie = _mapper.Map<TvSerie>(command);
 
@@ -45,7 +50,7 @@ namespace MovieStream.Core.Application.Features.TvSeries.Commands.UpdateTvSerie
 
             var tvSerieResponse = _mapper.Map<TvSerieUpdateResponse>(tvSerie);
 
-            return tvSerieResponse;
+            return new Response<TvSerieUpdateResponse>(tvSerieResponse);
         }
     }
 }

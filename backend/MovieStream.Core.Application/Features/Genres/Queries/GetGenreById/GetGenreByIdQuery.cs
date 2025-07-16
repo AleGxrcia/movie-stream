@@ -1,16 +1,19 @@
 ﻿using AutoMapper;
 using MediatR;
 using MovieStream.Core.Application.DTOs.Genre;
+using MovieStream.Core.Application.Exceptions;
 using MovieStream.Core.Application.Interfaces.Repositories;
+using MovieStream.Core.Application.Wrappers;
+using System.Net;
 
 namespace MovieStream.Core.Application.Features.Genres.Queries.GetGenreById
 {
-    public class GetGenreByIdQuery : IRequest<GenreDto>
+    public class GetGenreByIdQuery : IRequest<Response<GenreDto>>
     {
         public int Id { get; set; }
     }
 
-    public class GetGenreByIdQueryHandler : IRequestHandler<GetGenreByIdQuery, GenreDto>
+    public class GetGenreByIdQueryHandler : IRequestHandler<GetGenreByIdQuery, Response<GenreDto>>
     {
         private readonly IGenreRepository _genreRepository;
         private readonly IMapper _mapper;
@@ -21,11 +24,11 @@ namespace MovieStream.Core.Application.Features.Genres.Queries.GetGenreById
             _mapper = mapper;
         }
 
-        public async Task<GenreDto> Handle(GetGenreByIdQuery request, CancellationToken cancellationToken)
+        public async Task<Response<GenreDto>> Handle(GetGenreByIdQuery request, CancellationToken cancellationToken)
         {
-            var genre = await GetByIdDto(request.Id);
-            if (genre == null) throw new Exception("Genre not found.");
-            return genre;
+            var genreDto = await GetByIdDto(request.Id);
+            if (genreDto == null) throw new ApiException("Genre not found.", (int)HttpStatusCode.NotFound);
+            return new Response<GenreDto>(genreDto);
         }
 
         private async Task<GenreDto> GetByIdDto(int id)

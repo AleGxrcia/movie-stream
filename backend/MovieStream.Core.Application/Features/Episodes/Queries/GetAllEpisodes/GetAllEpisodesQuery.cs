@@ -1,15 +1,17 @@
 ﻿using AutoMapper;
 using MediatR;
-using MovieStream.Core.Application.Common.Parameters.Base;
+using MovieStream.Core.Application.Common.Parameters.Episodes;
 using MovieStream.Core.Application.DTOs.Episode;
+using MovieStream.Core.Application.Exceptions;
 using MovieStream.Core.Application.Interfaces.Repositories;
 using MovieStream.Core.Application.Wrappers;
+using System.Net;
 
 namespace MovieStream.Core.Application.Features.Episodes.Queries.GetAllEpisodes
 {
     public class GetAllEpisodesQuery : IRequest<Response<PagedList<EpisodeDto>>>
     {
-        public RequestParameters Parameters { get; set; }
+        public EpisodeParameters Parameters { get; set; }
     }
 
     public class GetAllEpisodesQueryHandler : IRequestHandler<GetAllEpisodesQuery, Response<PagedList<EpisodeDto>>>
@@ -26,19 +28,22 @@ namespace MovieStream.Core.Application.Features.Episodes.Queries.GetAllEpisodes
         public async Task<Response<PagedList<EpisodeDto>>> Handle(GetAllEpisodesQuery request, CancellationToken cancellationToken)
         {
             var filters = request.Parameters;
-            var episodesPagedResponse = await GetAllDtoWithFilters(filters);
+            var pagedEpisodesDto = await GetAllDtoWithFilters(filters);
 
-            if (episodesPagedResponse == null || episodesPagedResponse.Data.Any()) throw new Exception("Episodes not found.");
+            if (pagedEpisodesDto == null || pagedEpisodesDto.Count == 0)
+            {
+                throw new ApiException("Episodes not found.", (int)HttpStatusCode.NotFound);
+            }
 
-            return episodesPagedResponse;
+            return new Response<PagedList<EpisodeDto>>(pagedEpisodesDto);
         }
 
-        private async Task<PagedList<EpisodeDto>> GetAllDtoWithFilters(GetAllEpisodesParameters filters)
+        private async Task<PagedList<EpisodeDto>> GetAllDtoWithFilters(EpisodeParameters parameters)
         {
-            var (tvSeriesList, totalCount) = await _episodeRepository.GetAllWithFilters(filters);
-            var tvSerieDtoList = _mapper.Map<List<EpisodeDto>>(tvSeriesList);
+            var episodeList = await _episodeRepository.GetAllWithFilters(parameters);
+            var episodeDtoList = _mapper.Map<List<EpisodeDto>>(episodeList);
 
-            return new PagedResponse<EpisodeDto>(tvSerieDtoList, filters.PageNumber, filters.PageSize, totalCount);
+            return new PagedList<EpisodeDto>(episodeDtoList, episodeList.MetaData.TotalCount, parameters.PageNumber, parameters.PageSize);
         }
     }
 }

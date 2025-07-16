@@ -1,17 +1,21 @@
 ﻿using AutoMapper;
 using MediatR;
+using MovieStream.Core.Application.Exceptions;
 using MovieStream.Core.Application.Interfaces.Repositories;
+using MovieStream.Core.Application.Wrappers;
 using MovieStream.Core.Domain.Entities;
+using System.Net;
 
 namespace MovieStream.Core.Application.Features.ProductionCompanies.Commands.UpdateProductionCompany
 {
-    public class UpdateProductionCompanyCommand : IRequest<ProductionCompanyUpdateResponse>
+    public class UpdateProductionCompanyCommand : IRequest<Response<ProductionCompanyUpdateResponse>>
     {
         public int Id { get; set; }
         public string Name { get; set; }
     }
 
-    public class UpdateProductionCompanyCommandHandler : IRequestHandler<UpdateProductionCompanyCommand, ProductionCompanyUpdateResponse>
+    public class UpdateProductionCompanyCommandHandler : IRequestHandler<UpdateProductionCompanyCommand,
+        Response<ProductionCompanyUpdateResponse>>
     {
         private readonly IProductionCompanyRepository _prodCompanyRepository;
         private readonly IMapper _mapper;
@@ -22,11 +26,12 @@ namespace MovieStream.Core.Application.Features.ProductionCompanies.Commands.Upd
             _mapper = mapper;
         }
 
-        public async Task<ProductionCompanyUpdateResponse> Handle(UpdateProductionCompanyCommand command, CancellationToken cancellationToken)
+        public async Task<Response<ProductionCompanyUpdateResponse>> Handle(UpdateProductionCompanyCommand command,
+            CancellationToken cancellationToken)
         {
             var prodCompany = await _prodCompanyRepository.GetByIdAsync(command.Id);
 
-            if (prodCompany == null) throw new Exception("Production Company not found.");
+            if (prodCompany == null) throw new ApiException("Production Company not found.", (int)HttpStatusCode.NotFound);
 
             prodCompany = _mapper.Map<ProductionCompany>(command);
 
@@ -34,7 +39,7 @@ namespace MovieStream.Core.Application.Features.ProductionCompanies.Commands.Upd
 
             var prodCompanyResponse = _mapper.Map<ProductionCompanyUpdateResponse>(prodCompany);
 
-            return prodCompanyResponse;
+            return new Response<ProductionCompanyUpdateResponse>(prodCompanyResponse);
         }
     }
 }
