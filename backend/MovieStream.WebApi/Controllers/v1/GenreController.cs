@@ -1,8 +1,6 @@
 ﻿using Asp.Versioning;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MovieStream.Core.Application.DTOs.Genre;
-using MovieStream.Core.Application.Enums;
 using MovieStream.Core.Application.Features.Genres.Commands.CreateGenre;
 using MovieStream.Core.Application.Features.Genres.Commands.DeleteGenreById;
 using MovieStream.Core.Application.Features.Genres.Commands.UpdateGenre;
@@ -20,14 +18,7 @@ namespace MovieStream.WebApi.Controllers.v1
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Get()
         {
-            try
-            {
-                return Ok(await Mediator.Send(new GetAllGenresQuery()));
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
-            }
+            return Ok(await Mediator.Send(new GetAllGenresQuery()));
         }
 
         [HttpGet("{id}")]
@@ -36,14 +27,7 @@ namespace MovieStream.WebApi.Controllers.v1
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Get(int id)
         {
-            try
-            {
-                return Ok(await Mediator.Send(new GetGenreByIdQuery() { Id = id }));
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
-            }
+            return Ok(await Mediator.Send(new GetGenreByIdQuery() { Id = id }));
         }     
         
         [HttpPost]
@@ -52,19 +36,12 @@ namespace MovieStream.WebApi.Controllers.v1
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Post(CreateGenreCommand command)
         {
-            try
+            if (!ModelState.IsValid)
             {
-                if (!ModelState.IsValid)
-                {
-                    return BadRequest();
-                }
+                return BadRequest();
+            }
 
-                return Ok(await Mediator.Send(command));
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
-            }
+            return Ok(await Mediator.Send(command));
         }   
         
         [HttpPut("{id}")]
@@ -73,24 +50,17 @@ namespace MovieStream.WebApi.Controllers.v1
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Put(int id, UpdateGenreCommand command)
         {
-            try
+            if (!ModelState.IsValid)
             {
-                if (!ModelState.IsValid)
-                {
-                    return BadRequest();
-                }
-
-                if (id != command.Id)
-                {
-                    return BadRequest();
-                }
-
-                return Ok(await Mediator.Send(command));
+                return BadRequest();
             }
-            catch (Exception ex)
+
+            if (id != command.Id)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+                return BadRequest();
             }
+
+            return Ok(await Mediator.Send(command));
         }  
         
         [HttpDelete("{id}")]
@@ -98,16 +68,9 @@ namespace MovieStream.WebApi.Controllers.v1
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Delete(int id)
         {
-            try
-            {
-                await Mediator.Send(new DeleteGenreByIdCommand { Id = id });
+            await Mediator.Send(new DeleteGenreByIdCommand { Id = id });
 
-                return NoContent();
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
-            }
+            return NoContent();
         }
     }
 }

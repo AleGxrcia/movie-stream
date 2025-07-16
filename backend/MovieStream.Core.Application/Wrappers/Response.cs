@@ -1,4 +1,5 @@
-﻿namespace MovieStream.Core.Application.Wrappers
+﻿
+namespace MovieStream.Core.Application.Wrappers
 {
     public class Response<T>
     {
