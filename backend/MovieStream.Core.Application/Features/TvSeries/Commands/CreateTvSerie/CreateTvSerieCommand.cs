@@ -25,17 +25,24 @@ namespace MovieStream.Core.Application.Features.TvSeries.Commands.CreateTvSerie
     public class CreateTvSerieCommandHandler : IRequestHandler<CreateTvSerieCommand, Response<int>>
     {
         private readonly ITvSerieRepository _tvSerieRepository;
+        private readonly IGenreRepository _genreRepository;
         private readonly IMapper _mapper;
 
-        public CreateTvSerieCommandHandler(ITvSerieRepository tvSerieRepository, IMapper mapper)
+        public CreateTvSerieCommandHandler(ITvSerieRepository tvSerieRepository, IGenreRepository genreRepository,
+            IMapper mapper)
         {
             _tvSerieRepository = tvSerieRepository;
+            _genreRepository = genreRepository;
             _mapper = mapper;
         }
 
         public async Task<Response<int>> Handle(CreateTvSerieCommand command, CancellationToken cancellationToken)
         {
             var tvSerie = _mapper.Map<TvSerie>(command);
+            var genres = await _genreRepository.GetByIdsAsync(command.GenreIds);
+
+            tvSerie.Genres = genres;
+
             tvSerie = await _tvSerieRepository.AddAsync(tvSerie);
             return new Response<int>(tvSerie.Id);
         }
