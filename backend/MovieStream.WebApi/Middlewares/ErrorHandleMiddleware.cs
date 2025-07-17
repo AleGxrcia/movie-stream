@@ -29,7 +29,9 @@ namespace MovieStream.WebApi.Middlewares
                 switch (error)
                 {
                     case ApiException e:
-                        response.StatusCode = e.ErrorCode;
+                        response.StatusCode = Enum.IsDefined(typeof(HttpStatusCode), e.ErrorCode)
+                            ? e.ErrorCode
+                            : (int)HttpStatusCode.InternalServerError;
                         responseModel.Error = new Error
                         {
                             Code = e.ErrorCode,
