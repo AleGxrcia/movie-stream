@@ -7,17 +7,16 @@ using MovieStream.Core.Application.DTOs.Season;
 using MovieStream.Core.Application.DTOs.TvSerie;
 using MovieStream.Core.Application.Features.Episodes.Commands.CreateEpisode;
 using MovieStream.Core.Application.Features.Episodes.Commands.UpdateEpisode;
-using MovieStream.Core.Application.Features.Episodes.Queries.GetAllEpisodes;
 using MovieStream.Core.Application.Features.Genres.Commands.CreateGenre;
 using MovieStream.Core.Application.Features.Genres.Commands.UpdateGenre;
+using MovieStream.Core.Application.Features.Movies.Commands.CreateMovie;
+using MovieStream.Core.Application.Features.Movies.Commands.UpdateMovie;
 using MovieStream.Core.Application.Features.ProductionCompanies.Commands.CreateProductionCompany;
 using MovieStream.Core.Application.Features.ProductionCompanies.Commands.UpdateProductionCompany;
 using MovieStream.Core.Application.Features.Seasons.Commands.CreateSeason;
 using MovieStream.Core.Application.Features.Seasons.Commands.UpdateSeason;
-using MovieStream.Core.Application.Features.Seasons.Queries.GetAllSeasons;
 using MovieStream.Core.Application.Features.TvSeries.Commands.CreateTvSerie;
 using MovieStream.Core.Application.Features.TvSeries.Commands.UpdateTvSerie;
-using MovieStream.Core.Application.Features.TvSeries.Queries.GetAllTvSeries;
 using MovieStream.Core.Domain.Entities;
 
 namespace MovieStream.Core.Application.Mappings
@@ -65,9 +64,6 @@ namespace MovieStream.Core.Application.Mappings
                 .ForMember(dest => dest.ImageFile, opt => opt.Ignore())
                 .ReverseMap()
                 .ForMember(dest => dest.ImageFile, opt => opt.Ignore());
-
-            CreateMap<GetAllTvSeriesQuery, GetAllTvSeriesParameters>()
-                .ReverseMap();
             #endregion
 
             #region MovieProfile
@@ -78,18 +74,39 @@ namespace MovieStream.Core.Application.Mappings
                 .ForMember(dest => dest.LastModified, opt => opt.Ignore())
                 .ForMember(dest => dest.LastModifiedBy, opt => opt.Ignore());
 
-            CreateMap<Movie, SaveMovieDto>()
+            CreateMap<Movie, CreateMovieCommand>()
                 .ForMember(dest => dest.ImageFile, opt => opt.Ignore())
                 .ForMember(dest => dest.GenreIds, opt => opt.MapFrom(src => src.Genres.Select(g => g.Id).ToList()))
                 .ReverseMap()
                 .ForMember(dest => dest.Created, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
                 .ForMember(dest => dest.LastModified, opt => opt.Ignore())
-                .ForMember(dest => dest.LastModifiedBy, opt => opt.Ignore())
-                .ForMember(dest => dest.Genres, opt => opt.Ignore())
-                .ForMember(dest => dest.ProductionCompany, opt => opt.Ignore());
-            #endregion            
-            
+                .ForMember(dest => dest.LastModifiedBy, opt => opt.Ignore());
+
+            CreateMap<Movie, UpdateMovieCommand>()
+                .ForMember(dest => dest.ImageFile, opt => opt.Ignore())
+                .ForMember(dest => dest.GenreIds, opt => opt.MapFrom(src => src.Genres.Select(g => g.Id).ToList()))
+                .ReverseMap()
+                .ForMember(dest => dest.Created, opt => opt.Ignore())
+                .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
+                .ForMember(dest => dest.LastModified, opt => opt.Ignore())
+                .ForMember(dest => dest.LastModifiedBy, opt => opt.Ignore());
+
+            CreateMap<Movie, MovieUpdateResponse>()
+                .ForMember(dest => dest.ImageFile, opt => opt.Ignore())
+                .ForMember(dest => dest.GenreIds, opt => opt.MapFrom(src => src.Genres.Select(g => g.Id).ToList()))
+                .ReverseMap()
+                .ForMember(dest => dest.Created, opt => opt.Ignore())
+                .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
+                .ForMember(dest => dest.LastModified, opt => opt.Ignore())
+                .ForMember(dest => dest.LastModifiedBy, opt => opt.Ignore());
+
+            CreateMap<CreateMovieCommand, UpdateMovieCommand>()
+                .ForMember(dest => dest.ImageFile, opt => opt.Ignore())
+                .ReverseMap()
+                .ForMember(dest => dest.ImageFile, opt => opt.Ignore());
+            #endregion
+
             #region SeasonProfile
             CreateMap<Season, SeasonDto>()
                 .ReverseMap()
@@ -112,9 +129,6 @@ namespace MovieStream.Core.Application.Mappings
                 .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
                 .ForMember(dest => dest.LastModified, opt => opt.Ignore())
                 .ForMember(dest => dest.LastModifiedBy, opt => opt.Ignore());
-
-            CreateMap<GetAllSeasonsQuery, GetAllSeasonsParameters>()
-                .ReverseMap();
             #endregion
 
             #region EpisodeProfile
@@ -139,9 +153,6 @@ namespace MovieStream.Core.Application.Mappings
                 .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
                 .ForMember(dest => dest.LastModified, opt => opt.Ignore())
                 .ForMember(dest => dest.LastModifiedBy, opt => opt.Ignore());
-
-            CreateMap<GetAllEpisodesQuery, GetAllEpisodesParameters>()
-                .ReverseMap();
             #endregion
 
             #region GenreProfile

@@ -31,7 +31,7 @@ namespace MovieStream.Core.Application.Features.Genres.Queries.GetAllGenres
             var pagedGenresDto = await GetAllDtoWithFilters(filters);
             if (pagedGenresDto == null || pagedGenresDto.Count == 0) throw new ApiException("Genres not found.", (int)HttpStatusCode.NotFound);
 
-            return new Response<PagedList<GenreDto>>(pagedGenresDto);
+            return new Response<PagedList<GenreDto>>(pagedGenresDto, pagedGenresDto.MetaData);
         }
 
         private async Task<PagedList<GenreDto>> GetAllDtoWithFilters(RequestParameters parameters)

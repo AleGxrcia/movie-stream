@@ -37,7 +37,7 @@ namespace MovieStream.Core.Application.Features.ProductionCompanies.Queries.GetA
                 throw new ApiException("Production Companies not found.", (int)HttpStatusCode.NotFound);
             } 
 
-            return new Response<PagedList<ProductionCompanyDto>>(pagedProdCompaniesDto);
+            return new Response<PagedList<ProductionCompanyDto>>(pagedProdCompaniesDto, pagedProdCompaniesDto.MetaData);
         }
 
         private async Task<PagedList<ProductionCompanyDto>> GetAllDtoWithFilters(RequestParameters parameters)

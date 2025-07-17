@@ -35,7 +35,7 @@ namespace MovieStream.Core.Application.Features.TvSeries.Queries.GetAllTvSeries
                 throw new ApiException("TvSeries not found.", (int)HttpStatusCode.NotFound);
             }
 
-            return new Response<PagedList<TvSerieDto>>(pagedTvSeriesDto);
+            return new Response<PagedList<TvSerieDto>>(pagedTvSeriesDto, pagedTvSeriesDto.MetaData);
         }
 
         private async Task<PagedList<TvSerieDto>> GetAllDtoWithFilters(TvSerieParameters parameters)

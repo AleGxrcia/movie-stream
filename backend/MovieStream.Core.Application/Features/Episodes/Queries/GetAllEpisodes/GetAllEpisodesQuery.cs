@@ -35,7 +35,7 @@ namespace MovieStream.Core.Application.Features.Episodes.Queries.GetAllEpisodes
                 throw new ApiException("Episodes not found.", (int)HttpStatusCode.NotFound);
             }
 
-            return new Response<PagedList<EpisodeDto>>(pagedEpisodesDto);
+            return new Response<PagedList<EpisodeDto>>(pagedEpisodesDto, pagedEpisodesDto.MetaData);
         }
 
         private async Task<PagedList<EpisodeDto>> GetAllDtoWithFilters(EpisodeParameters parameters)

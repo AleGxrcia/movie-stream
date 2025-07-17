@@ -35,7 +35,7 @@ namespace MovieStream.Core.Application.Features.Seasons.Queries.GetAllSeasons
                 throw new ApiException("Seasons not found.", (int)HttpStatusCode.NotFound);
             }
 
-            return new Response<PagedList<SeasonDto>>(pagedSeasonsDto);
+            return new Response<PagedList<SeasonDto>>(pagedSeasonsDto, pagedSeasonsDto.MetaData);
         }
 
         private async Task<PagedList<SeasonDto>> GetAllDtoWithFilters(SeasonParameters parameters)

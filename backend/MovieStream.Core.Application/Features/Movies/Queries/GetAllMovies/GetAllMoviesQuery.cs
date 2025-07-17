@@ -35,7 +35,7 @@ namespace MovieStream.Core.Application.Features.Movies.Queries.GetAllMovies
                 throw new ApiException("Movies not found.", (int)HttpStatusCode.NotFound);
             }
 
-            return new Response<PagedList<MovieDto>>(pagedMoviesDto);
+            return new Response<PagedList<MovieDto>>(pagedMoviesDto, pagedMoviesDto.MetaData);
         }
 
         private async Task<PagedList<MovieDto>> GetAllDtoWithFilters(MovieParameters filters)
