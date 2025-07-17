@@ -55,22 +55,19 @@ namespace MovieStream.WebApi.Controllers.v1
             }
 
             var response = await Mediator.Send(command);
-            var tvSerieId = response.Data;
 
             if (command.ImageFile != null)
             {
-                var imagePath = await _fileManagerService.UploadFileAsync(command.ImageFile, tvSerieId, "TvSeries");
+                var imagePath = await _fileManagerService.UploadFileAsync(command.ImageFile, response.Data, "TvSeries");
 
                 var updateTvSerie = _mapper.Map<UpdateTvSerieCommand>(command);
-                updateTvSerie.Id = tvSerieId;
+                updateTvSerie.Id = response.Data;
                 updateTvSerie.ImagePath = imagePath;
 
                 await Mediator.Send(updateTvSerie);
             }
 
-            var tvSerie = await Mediator.Send(new GetTvSerieByIdQuery() { Id = tvSerieId });
-
-            return Ok(response);
+            return CreatedAtAction(nameof(Get), new { id = response.Data }, response);
         }
 
         [HttpPut("{id}")]
