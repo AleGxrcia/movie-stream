@@ -115,7 +115,7 @@ namespace MovieStream.Infrastructure.Persistence.Contexts
 
             modelBuilder.Entity<TvSerie>()
                 .Property(ts => ts.ImagePath)
-                .IsRequired()
+                .IsRequired(false)
                 .IsUnicode(false);
 
             modelBuilder.Entity<TvSerie>()
@@ -136,7 +136,7 @@ namespace MovieStream.Infrastructure.Persistence.Contexts
 
             modelBuilder.Entity<Movie>()
                 .Property(m => m.ImagePath)
-                .IsRequired()
+                .IsRequired(false)
                 .IsUnicode(false);
 
             modelBuilder.Entity<Movie>()
