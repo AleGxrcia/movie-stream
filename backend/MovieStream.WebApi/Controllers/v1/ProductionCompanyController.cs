@@ -41,7 +41,9 @@ namespace MovieStream.WebApi.Controllers.v1
                 return BadRequest();
             }
 
-            return Ok(await Mediator.Send(command));
+            var response = await Mediator.Send(command);
+
+            return CreatedAtAction(nameof(Get), new { id = response.Data });
         }   
         
         [HttpPut("{id}")]

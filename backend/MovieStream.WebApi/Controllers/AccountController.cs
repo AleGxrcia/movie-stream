@@ -20,14 +20,28 @@ namespace MovieStream.WebApi.Controllers
         [HttpPost("authenticate")]
         public async Task<IActionResult> AuthenticateAsync(AuthenticationRequest request)
         {
-            return Ok(await _accountService.AuthenticateAsync(request));
+            var response = await _accountService.AuthenticateAsync(request);
+
+            if (response.HasError)
+            {
+                return Unauthorized(response.Error);
+            }
+
+            return Ok(response);
         }
 
         [HttpPost("register")]
         public async Task<IActionResult> RegisterAsync(RegisterRequest request)
         {
             var origin = Request.Headers.Origin;
-            return Ok(await _accountService.RegisterBasicUserAsync(request, origin));
+            var response = await _accountService.RegisterBasicUserAsync(request, origin);
+
+            if (response.HasError)
+            {
+                return BadRequest(response.Error);
+            }
+
+            return Ok(response);
         }
 
         [Authorize(Roles = nameof(Roles.Admin))]
@@ -35,7 +49,14 @@ namespace MovieStream.WebApi.Controllers
         public async Task<IActionResult> RegisterContentManagerAsync(RegisterRequest request)
         {
             var origin = Request.Headers.Origin;
-            return Ok(await _accountService.RegisterContentManagerUserAsync(request, origin));
+            var response = await _accountService.RegisterContentManagerUserAsync(request, origin);
+
+            if (response.HasError)
+            {
+                return BadRequest(response.Error);
+            }
+
+            return Ok(response);
         }
 
         [Authorize(Roles = nameof(Roles.Admin))]
@@ -43,7 +64,14 @@ namespace MovieStream.WebApi.Controllers
         public async Task<IActionResult> RegisterAdminAsync(RegisterRequest request)
         {
             var origin = Request.Headers.Origin;
-            return Ok(await _accountService.RegisterAdminUserAsync(request, origin));
+            var response = await _accountService.RegisterAdminUserAsync(request, origin);
+
+            if (response.HasError)
+            {
+                return BadRequest(response.Error);
+            }
+
+            return Ok(response);
         }
 
         [HttpGet("confirm-email")]
@@ -58,13 +86,27 @@ namespace MovieStream.WebApi.Controllers
         public async Task<IActionResult> ForgotPasswordAsync(ForgotPasswordRequest request)
         {
             var origin = Request.Headers.Origin;
-            return Ok(await _accountService.ForgotPasswordAsync(request, origin));
+            var response = await _accountService.ForgotPasswordAsync(request, origin);
+
+            if (response.HasError)
+            {
+                return BadRequest(response.Error);
+            }
+
+            return Ok(response);
         }
 
         [HttpPost("reset-password")]
         public async Task<IActionResult> ResetPasswordAsync(ResetPasswordRequest request)
         {
-            return Ok(await _accountService.ResetPasswordAsync(request));
+            var response = await _accountService.ResetPasswordAsync(request);
+
+            if (response.HasError)
+            {
+                return BadRequest(response.Error);
+            }
+
+            return Ok(response);
         }
 
         [HttpPost("refresh-token")]
