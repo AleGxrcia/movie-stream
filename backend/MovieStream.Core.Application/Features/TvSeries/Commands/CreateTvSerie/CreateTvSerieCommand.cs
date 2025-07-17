@@ -2,12 +2,13 @@
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using MovieStream.Core.Application.Interfaces.Repositories;
+using MovieStream.Core.Application.Wrappers;
 using MovieStream.Core.Domain.Entities;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace MovieStream.Core.Application.Features.TvSeries.Commands.CreateTvSerie
 {
-    public class CreateTvSerieCommand : IRequest<int>
+    public class CreateTvSerieCommand : IRequest<Response<int>>
     {
         public string Name { get; set; }
         public string? Description { get; set; }
@@ -15,12 +16,13 @@ namespace MovieStream.Core.Application.Features.TvSeries.Commands.CreateTvSerie
         public int ProductionCompanyId { get; set; }
         public List<int> GenreIds { get; set; }
 
+
         [SwaggerIgnore]
         public string? ImagePath { get; set; }
         public IFormFile ImageFile { get; set; }
     }
 
-    public class CreateTvSerieCommandHandler : IRequestHandler<CreateTvSerieCommand, int>
+    public class CreateTvSerieCommandHandler : IRequestHandler<CreateTvSerieCommand, Response<int>>
     {
         private readonly ITvSerieRepository _tvSerieRepository;
         private readonly IMapper _mapper;
@@ -31,11 +33,11 @@ namespace MovieStream.Core.Application.Features.TvSeries.Commands.CreateTvSerie
             _mapper = mapper;
         }
 
-        public async Task<int> Handle(CreateTvSerieCommand command, CancellationToken cancellationToken)
+        public async Task<Response<int>> Handle(CreateTvSerieCommand command, CancellationToken cancellationToken)
         {
             var tvSerie = _mapper.Map<TvSerie>(command);
             tvSerie = await _tvSerieRepository.AddAsync(tvSerie);
-            return tvSerie.Id;
+            return new Response<int>(tvSerie.Id);
         }
     }
 }

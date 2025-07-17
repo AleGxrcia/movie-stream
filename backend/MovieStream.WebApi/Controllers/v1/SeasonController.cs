@@ -1,5 +1,6 @@
 ﻿using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
+using MovieStream.Core.Application.Common.Parameters.Seasons;
 using MovieStream.Core.Application.DTOs.Season;
 using MovieStream.Core.Application.Features.Seasons.Commands.CreateSeason;
 using MovieStream.Core.Application.Features.Seasons.Commands.DeleteSeasonById;
@@ -16,24 +17,9 @@ namespace MovieStream.WebApi.Controllers.v1
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SeasonDto))]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> Get([FromQuery] GetAllSeasonsParameters filters)
+        public async Task<IActionResult> Get([FromQuery] SeasonParameters parameters)
         {
-            try
-            {
-                return Ok(await Mediator.Send(new GetAllSeasonsQuery()
-                {
-                    FilterBy = filters.FilterBy,
-                    FilterValue = filters.FilterValue,
-                    PageNumber = filters.PageNumber,
-                    PageSize = filters.PageSize,
-                    SortColumn = filters.SortColumn,
-                    SortOrder = filters.SortOrder
-                }));
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
-            }
+            return Ok(await Mediator.Send(new GetAllSeasonsQuery() { Parameters = parameters }));
         }
 
         [HttpGet("{id}")]
@@ -42,14 +28,7 @@ namespace MovieStream.WebApi.Controllers.v1
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Get(int id)
         {
-            try
-            {
-                return Ok(await Mediator.Send(new GetSeasonDetailsByIdQuery() { Id = id }));
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
-            }
+            return Ok(await Mediator.Send(new GetSeasonDetailsByIdQuery() { Id = id }));
         }
 
         [HttpPost]
@@ -58,19 +37,12 @@ namespace MovieStream.WebApi.Controllers.v1
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Post(CreateSeasonCommand command)
         {
-            try
+            if (!ModelState.IsValid)
             {
-                if (!ModelState.IsValid)
-                {
-                    return BadRequest(ModelState);
-                }
+                return BadRequest(ModelState);
+            }
 
-                return Ok(await Mediator.Send(command));
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
-            }
+            return Ok(await Mediator.Send(command));
         }
 
         [HttpPut("{id}")]
@@ -79,24 +51,17 @@ namespace MovieStream.WebApi.Controllers.v1
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Put(int id, UpdateSeasonCommand command)
         {
-            try
+            if (!ModelState.IsValid)
             {
-                if (!ModelState.IsValid)
-                {
-                    return BadRequest(ModelState);
-                }
-
-                if (id != command.Id)
-                {
-                    return BadRequest();
-                }
-
-                return Ok(await Mediator.Send(command));
+                return BadRequest(ModelState);
             }
-            catch (Exception ex)
+
+            if (id != command.Id)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+                return BadRequest();
             }
+
+            return Ok(await Mediator.Send(command));
         }
 
         [HttpDelete("{id}")]
@@ -104,16 +69,8 @@ namespace MovieStream.WebApi.Controllers.v1
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Delete(int id)
         {
-            try
-            {
-                await Mediator.Send(new DeleteSeasonByIdCommand { Id = id });
-
-                return NoContent();
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
-            }
+            await Mediator.Send(new DeleteSeasonByIdCommand { Id = id });
+            return NoContent();
         }
     }
 }

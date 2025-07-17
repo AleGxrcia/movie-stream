@@ -1,16 +1,17 @@
 ﻿using AutoMapper;
 using MediatR;
 using MovieStream.Core.Application.Interfaces.Repositories;
+using MovieStream.Core.Application.Wrappers;
 using MovieStream.Core.Domain.Entities;
 
 namespace MovieStream.Core.Application.Features.Genres.Commands.CreateGenre
 {
-    public class CreateGenreCommand : IRequest<int>
+    public class CreateGenreCommand : IRequest<Response<int>>
     {
         public string Name { get; set; }
     }
 
-    public class CreateGenreCommandHandler : IRequestHandler<CreateGenreCommand, int>
+    public class CreateGenreCommandHandler : IRequestHandler<CreateGenreCommand, Response<int>>
     {
         private readonly IGenreRepository _genreRepository;
         private readonly IMapper _mapper;
@@ -21,11 +22,11 @@ namespace MovieStream.Core.Application.Features.Genres.Commands.CreateGenre
             _mapper = mapper;
         }
 
-        public async Task<int> Handle(CreateGenreCommand command, CancellationToken cancellationToken)
+        public async Task<Response<int>> Handle(CreateGenreCommand command, CancellationToken cancellationToken)
         {
             var genre = _mapper.Map<Genre>(command);
             genre = await _genreRepository.AddAsync(genre);
-            return genre.Id;
+            return new Response<int>(genre.Id);
         }
     }
 }

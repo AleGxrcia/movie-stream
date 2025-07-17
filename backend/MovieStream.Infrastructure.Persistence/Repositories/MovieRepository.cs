@@ -32,12 +32,12 @@ namespace MovieStream.Infrastructure.Persistence.Repositories
 
             var totalCount = await moviesQuery.CountAsync();
             
-            var itemsForCurrentPage = await moviesQuery
+            var movies = await moviesQuery
                 .Skip((movieParams.PageNumber - 1) * movieParams.PageSize)
                 .Take(movieParams.PageSize)
                 .ToListAsync();
 
-            return PagedList<Movie>.ToPagedList(itemsForCurrentPage, totalCount, movieParams.PageNumber, movieParams.PageSize);
+            return PagedList<Movie>.ToPagedList(movies, totalCount, movieParams.PageNumber, movieParams.PageSize);
         }
 
         public async Task<Movie?> GetByIdWithInclude(int id)

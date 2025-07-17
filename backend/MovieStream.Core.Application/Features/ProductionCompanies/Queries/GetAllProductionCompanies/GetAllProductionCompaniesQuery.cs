@@ -1,15 +1,21 @@
 ﻿using AutoMapper;
 using MediatR;
+using MovieStream.Core.Application.Common.Parameters.Base;
 using MovieStream.Core.Application.DTOs.ProductionCompany;
+using MovieStream.Core.Application.Exceptions;
 using MovieStream.Core.Application.Interfaces.Repositories;
+using MovieStream.Core.Application.Wrappers;
+using System.Net;
 
 namespace MovieStream.Core.Application.Features.ProductionCompanies.Queries.GetAllProductionCompanies
 {
-    public class GetAllProductionCompaniesQuery : IRequest<IList<ProductionCompanyDto>>
+    public class GetAllProductionCompaniesQuery : IRequest<Response<PagedList<ProductionCompanyDto>>>
     {
+        public RequestParameters Parameters { get; set; }
     }
 
-    public class GetAllProductionCompaniesQueryHandler : IRequestHandler<GetAllProductionCompaniesQuery, IList<ProductionCompanyDto>>
+    public class GetAllProductionCompaniesQueryHandler : IRequestHandler<GetAllProductionCompaniesQuery,
+        Response<PagedList<ProductionCompanyDto>>>
     {
         private readonly IProductionCompanyRepository _prodCompanyRepository;
         private readonly IMapper _mapper;
@@ -20,17 +26,31 @@ namespace MovieStream.Core.Application.Features.ProductionCompanies.Queries.GetA
             _mapper = mapper;
         }
 
-        public async Task<IList<ProductionCompanyDto>> Handle(GetAllProductionCompaniesQuery request, CancellationToken cancellationToken)
+        public async Task<Response<PagedList<ProductionCompanyDto>>> Handle(GetAllProductionCompaniesQuery request,
+            CancellationToken cancellationToken)
         {
-            var prodCompanyList = await GetAllDtoWithFilters();
-            if (prodCompanyList == null || prodCompanyList.Count == 0) throw new Exception("Production Companies not found.");
-            return prodCompanyList;
+            var filters = request.Parameters;
+            var pagedProdCompaniesDto = await GetAllDtoWithFilters(filters);
+
+            if (pagedProdCompaniesDto == null || pagedProdCompaniesDto.Count == 0) 
+            {
+                throw new ApiException("Production Companies not found.", (int)HttpStatusCode.NotFound);
+            } 
+
+            return new Response<PagedList<ProductionCompanyDto>>(pagedProdCompaniesDto, pagedProdCompaniesDto.MetaData);
         }
 
-        private async Task<List<ProductionCompanyDto>> GetAllDtoWithFilters()
+        private async Task<PagedList<ProductionCompanyDto>> GetAllDtoWithFilters(RequestParameters parameters)
         {
-            var prodCompanyList = await _prodCompanyRepository.GetAllAsync();
-            return _mapper.Map<List<ProductionCompanyDto>>(prodCompanyList);
+            var prodCompanyList = await _prodCompanyRepository.GetAllWithFilters(parameters);
+            var prodCompanyDtoList = _mapper.Map<List<ProductionCompanyDto>>(prodCompanyList);
+
+            return new PagedList<ProductionCompanyDto>(
+                prodCompanyDtoList,
+                prodCompanyList.MetaData.TotalCount,
+                parameters.PageNumber,
+                parameters.PageSize
+             );
         }
     }
 }

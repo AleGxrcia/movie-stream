@@ -1,16 +1,19 @@
 ﻿using AutoMapper;
 using MediatR;
 using MovieStream.Core.Application.DTOs.TvSerie;
+using MovieStream.Core.Application.Exceptions;
 using MovieStream.Core.Application.Interfaces.Repositories;
+using MovieStream.Core.Application.Wrappers;
+using System.Net;
 
 namespace MovieStream.Core.Application.Features.TvSeries.Queries.GetTvSerieById
 {
-    public class GetTvSerieByIdQuery : IRequest<TvSerieDto>
+    public class GetTvSerieByIdQuery : IRequest<Response<TvSerieDto>>
     {
         public int Id { get; set; }
     }
 
-    public class GetTvSerieByIdQueryHandler : IRequestHandler<GetTvSerieByIdQuery, TvSerieDto>
+    public class GetTvSerieByIdQueryHandler : IRequestHandler<GetTvSerieByIdQuery, Response<TvSerieDto>>
     {
         private readonly ITvSerieRepository _tvSerieRepository;
         private readonly IMapper _mapper;
@@ -21,11 +24,11 @@ namespace MovieStream.Core.Application.Features.TvSeries.Queries.GetTvSerieById
             _mapper = mapper;
         }
 
-        public async Task<TvSerieDto> Handle(GetTvSerieByIdQuery request, CancellationToken cancellationToken)
+        public async Task<Response<TvSerieDto>> Handle(GetTvSerieByIdQuery request, CancellationToken cancellationToken)
         {
             var tvSerie = await GetByIdDto(request.Id);
-            if (tvSerie == null) throw new Exception("TvSerie not found.");
-            return tvSerie;
+            if (tvSerie == null) throw new ApiException("TvSerie not found.", (int)HttpStatusCode.NotFound);
+            return new Response<TvSerieDto>(tvSerie);
         }
 
         private async Task<TvSerieDto> GetByIdDto(int id)

@@ -1,17 +1,20 @@
 ﻿using AutoMapper;
 using MediatR;
+using MovieStream.Core.Application.Exceptions;
 using MovieStream.Core.Application.Interfaces.Repositories;
+using MovieStream.Core.Application.Wrappers;
 using MovieStream.Core.Domain.Entities;
+using System.Net;
 
 namespace MovieStream.Core.Application.Features.Episodes.Commands.UpdateEpisode
 {
-    public class UpdateEpisodeCommand : IRequest<EpisodeUpdateResponse>
+    public class UpdateEpisodeCommand : IRequest<Response<EpisodeUpdateResponse>>
     {
         public int Id { get; set; }
         public string Name { get; set; }
     }
 
-    public class UpdateEpisodeCommandHandler : IRequestHandler<UpdateEpisodeCommand, EpisodeUpdateResponse>
+    public class UpdateEpisodeCommandHandler : IRequestHandler<UpdateEpisodeCommand, Response<EpisodeUpdateResponse>>
     {
         private readonly IEpisodeRepository _episodeRepository;
         private readonly IMapper _mapper;
@@ -22,11 +25,11 @@ namespace MovieStream.Core.Application.Features.Episodes.Commands.UpdateEpisode
             _mapper = mapper;
         }
 
-        public async Task<EpisodeUpdateResponse> Handle(UpdateEpisodeCommand command, CancellationToken cancellationToken)
+        public async Task<Response<EpisodeUpdateResponse>> Handle(UpdateEpisodeCommand command, CancellationToken cancellationToken)
         {
             var episode = await _episodeRepository.GetByIdAsync(command.Id);
 
-            if (episode == null) throw new Exception("Episode not found.");
+            if (episode == null) throw new ApiException("Episode not found.", (int)HttpStatusCode.NotFound);
 
             episode = _mapper.Map<Episode>(command);
 
@@ -34,7 +37,7 @@ namespace MovieStream.Core.Application.Features.Episodes.Commands.UpdateEpisode
 
             var episodeResponse = _mapper.Map<EpisodeUpdateResponse>(episode);
 
-            return episodeResponse;
+            return new Response<EpisodeUpdateResponse>(episodeResponse);
         }
     }
 }

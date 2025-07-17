@@ -1,21 +1,20 @@
 ﻿using AutoMapper;
 using MediatR;
+using MovieStream.Core.Application.Common.Parameters.Seasons;
 using MovieStream.Core.Application.DTOs.Season;
+using MovieStream.Core.Application.Exceptions;
 using MovieStream.Core.Application.Interfaces.Repositories;
+using MovieStream.Core.Application.Wrappers;
+using System.Net;
 
 namespace MovieStream.Core.Application.Features.Seasons.Queries.GetAllSeasons
 {
-    public class GetAllSeasonsQuery : IRequest<PagedResponse<SeasonDto>>
+    public class GetAllSeasonsQuery : IRequest<Response<PagedList<SeasonDto>>>
     {
-        public string? SortColumn { get; set; }
-        public string? SortOrder { get; set; }
-        public string? FilterBy { get; set; }
-        public string? FilterValue { get; set; }
-        public int PageNumber { get; set; }
-        public int PageSize { get; set; }
+        public SeasonParameters Parameters { get; set; }
     }
 
-    public class GetAllSeasonsQueryHandler : IRequestHandler<GetAllSeasonsQuery, PagedResponse<SeasonDto>>
+    public class GetAllSeasonsQueryHandler : IRequestHandler<GetAllSeasonsQuery, Response<PagedList<SeasonDto>>>
     {
         private readonly ISeasonRepository _seasonRepository;
         private readonly IMapper _mapper;
@@ -26,22 +25,30 @@ namespace MovieStream.Core.Application.Features.Seasons.Queries.GetAllSeasons
             _mapper = mapper;
         }
 
-        public async Task<PagedResponse<SeasonDto>> Handle(GetAllSeasonsQuery request, CancellationToken cancellationToken)
+        public async Task<Response<PagedList<SeasonDto>>> Handle(GetAllSeasonsQuery request, CancellationToken cancellationToken)
         {
-            var filters = _mapper.Map<GetAllSeasonsParameters>(request);
-            var seasonsPagedResponse = await GetAllDtoWithFilters(filters);
+            var filters = request.Parameters;
+            var pagedSeasonsDto = await GetAllDtoWithFilters(filters);
 
-            if (seasonsPagedResponse == null || seasonsPagedResponse.Data.Any()) throw new Exception("Seasons not found.");
+            if (pagedSeasonsDto == null || pagedSeasonsDto.Count == 0)
+            {
+                throw new ApiException("Seasons not found.", (int)HttpStatusCode.NotFound);
+            }
 
-            return seasonsPagedResponse;
+            return new Response<PagedList<SeasonDto>>(pagedSeasonsDto, pagedSeasonsDto.MetaData);
         }
 
-        private async Task<PagedResponse<SeasonDto>> GetAllDtoWithFilters(GetAllSeasonsParameters filters)
+        private async Task<PagedList<SeasonDto>> GetAllDtoWithFilters(SeasonParameters parameters)
         {
-            var (seasonList, totalCount) = await _seasonRepository.GetAllWithFilters(filters);
+            var seasonList = await _seasonRepository.GetAllWithFilters(parameters);
             var seasonDtoList = _mapper.Map<List<SeasonDto>>(seasonList);
 
-            return new PagedResponse<SeasonDto>(seasonDtoList, filters.PageNumber, filters.PageSize, totalCount);
+            return new PagedList<SeasonDto>(
+                seasonDtoList,
+                seasonList.MetaData.TotalCount,
+                parameters.PageNumber,
+                parameters.PageSize
+             );
         }
     }
 }

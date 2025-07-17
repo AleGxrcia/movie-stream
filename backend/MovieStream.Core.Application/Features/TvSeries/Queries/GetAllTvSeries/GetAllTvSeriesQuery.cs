@@ -1,21 +1,20 @@
 ﻿using AutoMapper;
 using MediatR;
+using MovieStream.Core.Application.Common.Parameters.TvSeries;
 using MovieStream.Core.Application.DTOs.TvSerie;
+using MovieStream.Core.Application.Exceptions;
 using MovieStream.Core.Application.Interfaces.Repositories;
+using MovieStream.Core.Application.Wrappers;
+using System.Net;
 
 namespace MovieStream.Core.Application.Features.TvSeries.Queries.GetAllTvSeries
 {
-    public class GetAllTvSeriesQuery : IRequest<PagedResponse<TvSerieDto>>
+    public class GetAllTvSeriesQuery : IRequest<Response<PagedList<TvSerieDto>>>
     {
-        public string? SortColumn { get; set; }
-        public string? SortOrder { get; set; }
-        public string? FilterBy { get; set; }
-        public string? FilterValue { get; set; }
-        public int PageNumber { get; set; }
-        public int PageSize { get; set; }
+        public TvSerieParameters Parameters { get; set; }
     }
 
-    public class GetAllTvSeriesQueryHandler : IRequestHandler<GetAllTvSeriesQuery, PagedResponse<TvSerieDto>>
+    public class GetAllTvSeriesQueryHandler : IRequestHandler<GetAllTvSeriesQuery, Response<PagedList<TvSerieDto>>>
     {
         private readonly ITvSerieRepository _tvSerieRepository;
         private readonly IMapper _mapper;
@@ -26,23 +25,30 @@ namespace MovieStream.Core.Application.Features.TvSeries.Queries.GetAllTvSeries
             _mapper = mapper;
         }
 
-        public async Task<PagedResponse<TvSerieDto>> Handle(GetAllTvSeriesQuery request, CancellationToken cancellationToken)
+        public async Task<Response<PagedList<TvSerieDto>>> Handle(GetAllTvSeriesQuery request, CancellationToken cancellationToken)
         {
-            var filters = _mapper.Map<GetAllTvSeriesParameters>(request);
-            var tvSeriesPagedResponse = await GetAllDtoWithFilters(filters);
+            var filters = request.Parameters;
+            var pagedTvSeriesDto = await GetAllDtoWithFilters(filters);
 
-            if (tvSeriesPagedResponse == null || !tvSeriesPagedResponse.Data.Any())
-                throw new Exception("TvSeries not found.");
+            if (pagedTvSeriesDto == null || pagedTvSeriesDto.Count == 0)
+            {
+                throw new ApiException("TvSeries not found.", (int)HttpStatusCode.NotFound);
+            }
 
-            return tvSeriesPagedResponse;
+            return new Response<PagedList<TvSerieDto>>(pagedTvSeriesDto, pagedTvSeriesDto.MetaData);
         }
 
-        private async Task<PagedResponse<TvSerieDto>> GetAllDtoWithFilters(GetAllTvSeriesParameters filters)
+        private async Task<PagedList<TvSerieDto>> GetAllDtoWithFilters(TvSerieParameters parameters)
         {
-            var (tvSeriesList, totalCount) = await _tvSerieRepository.GetAllWithFilters(filters);
-            var tvSerieDtoList = _mapper.Map<List<TvSerieDto>>(tvSeriesList);
+            var tvSerieList = await _tvSerieRepository.GetAllWithFilters(parameters);
+            var tvSerieDtoList = _mapper.Map<List<TvSerieDto>>(tvSerieList);
 
-            return new PagedResponse<TvSerieDto>(tvSerieDtoList, filters.PageNumber, filters.PageSize, totalCount);
+            return new PagedList<TvSerieDto>(
+                tvSerieDtoList,
+                tvSerieList.MetaData.TotalCount,
+                parameters.PageSize,
+                parameters.PageSize
+            );
         }
     }
 }

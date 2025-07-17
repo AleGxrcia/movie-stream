@@ -1,11 +1,14 @@
 ﻿using AutoMapper;
 using MediatR;
+using MovieStream.Core.Application.Exceptions;
 using MovieStream.Core.Application.Interfaces.Repositories;
+using MovieStream.Core.Application.Wrappers;
 using MovieStream.Core.Domain.Entities;
+using System.Net;
 
 namespace MovieStream.Core.Application.Features.Seasons.Commands.UpdateSeason
 {
-    public class UpdateSeasonCommand : IRequest<SeasonUpdateResponse>
+    public class UpdateSeasonCommand : IRequest<Response<SeasonUpdateResponse>>
     {
         public int Id { get; set; }
         public int SeasonNumber { get; set; }
@@ -15,7 +18,7 @@ namespace MovieStream.Core.Application.Features.Seasons.Commands.UpdateSeason
         public int TvSerieId { get; set; }
     }
 
-    public class UpdateSeasonCommandHandler : IRequestHandler<UpdateSeasonCommand, SeasonUpdateResponse>
+    public class UpdateSeasonCommandHandler : IRequestHandler<UpdateSeasonCommand, Response<SeasonUpdateResponse>>
     {
         private readonly ISeasonRepository _seasonRepository;
         private readonly IMapper _mapper;
@@ -26,11 +29,11 @@ namespace MovieStream.Core.Application.Features.Seasons.Commands.UpdateSeason
             _mapper = mapper;
         }
 
-        public async Task<SeasonUpdateResponse> Handle(UpdateSeasonCommand command, CancellationToken cancellationToken)
+        public async Task<Response<SeasonUpdateResponse>> Handle(UpdateSeasonCommand command, CancellationToken cancellationToken)
         {
             var season = await _seasonRepository.GetByIdAsync(command.Id);
 
-            if (season == null) throw new Exception("Season not found.");
+            if (season == null) throw new ApiException("Season not found.", (int)HttpStatusCode.NotFound);
 
             season = _mapper.Map<Season>(command);
 
@@ -38,7 +41,7 @@ namespace MovieStream.Core.Application.Features.Seasons.Commands.UpdateSeason
 
             var seasonResponse = _mapper.Map<SeasonUpdateResponse>(season);
 
-            return seasonResponse;
+            return new Response<SeasonUpdateResponse>(seasonResponse);
         }
     }
 }
