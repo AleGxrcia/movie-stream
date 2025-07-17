@@ -68,6 +68,7 @@ namespace MovieStream.Core.Application.Mappings
 
             #region MovieProfile
             CreateMap<Movie, MovieDto>()
+                .ForMember(dest => dest.Genres, opt => opt.MapFrom(src => src.Genres))
                 .ReverseMap()
                 .ForMember(dest => dest.Created, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
