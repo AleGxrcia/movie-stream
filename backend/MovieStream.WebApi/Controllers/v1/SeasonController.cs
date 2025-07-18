@@ -37,11 +37,6 @@ namespace MovieStream.WebApi.Controllers.v1
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Post(CreateSeasonCommand command)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
             var response = await Mediator.Send(command);
 
             return CreatedAtAction(nameof(Get), new { id = response.Data });

@@ -49,11 +49,6 @@ namespace MovieStream.WebApi.Controllers.v1
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Post([FromForm] CreateTvSerieCommand command)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
             var response = await Mediator.Send(command);
 
             if (command.ImageFile != null)
