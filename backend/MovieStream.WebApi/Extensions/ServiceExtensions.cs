@@ -64,5 +64,19 @@ namespace MovieStream.WebApi.Extensions
                 config.ReportApiVersions = true;
             });
         }
+
+        public static void AddCorsExtension(this IServiceCollection services)
+        {
+            services.AddCors(options =>
+            {
+                options.AddPolicy("AllowAll",
+                    builder =>
+                    {
+                        builder.AllowAnyOrigin()
+                               .AllowAnyHeader()
+                               .AllowAnyMethod();
+                    });
+            });
+        }
     }
 }
