@@ -6,11 +6,3 @@ export interface MetaData {
     hasNextPage: boolean;
     hasPreviousPage: boolean;
 }
-
-export interface PaginatedResponse<T> {
-    data: T[];
-    meta: MetaData;
-    secceeded: boolean;
-    message: string;
-    errors?: string[];
-}
