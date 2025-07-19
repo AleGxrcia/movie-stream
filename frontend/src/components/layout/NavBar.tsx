@@ -8,6 +8,13 @@ export const NavBar = () => {
         <BiSolidCameraMovie size={34} />
         <Link to="/">MovieStream</Link>
       </div>
+      <nav>
+        <ul className="flex gap-4">
+          <li>
+            <Link to="/movies">Películas</Link>
+          </li>
+        </ul>
+      </nav>
       <div>Search</div>
       <div>Login</div>
     </header>

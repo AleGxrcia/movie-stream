@@ -5,7 +5,7 @@ export interface Movie {
     id: number;
     name: string;
     description: string;
-    imageUrl: string | null;
+    imageUrl: string;
     runtime: string;
     releaseDate: string;
     genres?: Genre;
