@@ -12,22 +12,22 @@ const apiClient = axios.create({
 });
 
 apiClient.interceptors.response.use(
-    (response: AxiosResponse) => {
-
-        const data = response.data as BackendResponse<unknown>;
-        if (data && data.succeeded === false) {
-            console.error('Backend logic error:', data.message, data.errors);
-            const error = new Error(extractErrorMessage({ response: { data } } as AxiosError<BackendResponse<any>>));
+    (response: AxiosResponse<BackendResponse<unknown>>) => {
+        const { data } = response;
+        if (data.succeeded === false) {
+            const errorMessage = extractErrorMessage({ response } as AxiosError<BackendResponse<unknown>>);
+            console.error('Backend logic error:', errorMessage);
+            const error = new Error(errorMessage);
             throw error;
         }
-        return response.data;
+        return response;
     },
-    (error: AxiosError<BackendResponse<any>>) => {
+    (error: AxiosError<BackendResponse<unknown>>) => {
         const errorMessage = extractErrorMessage(error);
         console.error('API Error:', errorMessage);
 
         error.message = errorMessage;
-        throw error;
+        return Promise.reject(error);
     }
 );
 
