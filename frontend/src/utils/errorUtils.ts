@@ -1,11 +1,11 @@
 import axios, { AxiosError } from 'axios';
 import type { BackendResponse } from '../types/api.types';
 
-export type THttpError = Error | AxiosError<BackendResponse<any>> | null;
+export type THttpError = Error | AxiosError<BackendResponse<unknown>> | null;
 
 export function extractErrorMessage(error: THttpError): string {
     if (axios.isAxiosError(error)) {
-        const axiosError = error as AxiosError<BackendResponse<any>>;
+        const axiosError = error as AxiosError<BackendResponse<unknown>>;
 
         if (axiosError.response) {
             const backendData = axiosError.response.data;
