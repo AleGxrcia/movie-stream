@@ -21,8 +21,8 @@ namespace MovieStream.Core.Application.Features.TvSeries.Commands.UpdateTvSerie
 
 
         [SwaggerIgnore]
-        public string? ImagePath { get; set; }
-        public IFormFile ImageFile { get; set; }
+        public string? ImageUrl { get; set; }
+        public IFormFile? ImageFile { get; set; }
     }
 
     public class UpdateTvSerieCommandHandler : IRequestHandler<UpdateTvSerieCommand,

@@ -8,7 +8,7 @@ namespace MovieStream.Core.Application.DTOs.Movie
         public int Id { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
-        public string ImagePath { get; set; }
+        public string ImageUrl { get; set; }
         public TimeSpan Runtime { get; set; }
         public DateTime ReleaseDate { get; set; }
         public int ProductionCompanyId { get; set; }

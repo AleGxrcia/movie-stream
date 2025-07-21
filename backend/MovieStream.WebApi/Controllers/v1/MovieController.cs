@@ -53,11 +53,11 @@ namespace MovieStream.WebApi.Controllers.v1
 
             if (command.ImageFile != null)
             {
-                var imagePath = await _fileManagerService.UploadFileAsync(command.ImageFile, response.Data, "Movies");
+                var imageUrl = await _fileManagerService.UploadFileAsync(command.ImageFile, response.Data, "Movies");
 
                 var updateMovie = _mapper.Map<UpdateMovieCommand>(command);
                 updateMovie.Id = response.Data;
-                updateMovie.ImagePath = imagePath;
+                updateMovie.ImageUrl = imageUrl;
 
                 await Mediator.Send(updateMovie);
             }
@@ -85,10 +85,8 @@ namespace MovieStream.WebApi.Controllers.v1
             {
                 var response = await Mediator.Send(new GetMovieByIdQuery() { Id = id });
 
-                var imagePath = await _fileManagerService.UploadFileAsync(command.ImageFile, id, "Movies", response.Data.ImagePath);
-                command.ImagePath = imagePath;
-
-                await Mediator.Send(command);
+                var imageUrl = await _fileManagerService.UploadFileAsync(command.ImageFile, id, "Movies", response.Data.ImageUrl);
+                command.ImageUrl = imageUrl;
             }
 
             return Ok(await Mediator.Send(command));

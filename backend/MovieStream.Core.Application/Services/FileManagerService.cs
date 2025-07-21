@@ -7,10 +7,12 @@ namespace MovieStream.Core.Application.Services
     public class FileManagerService : IFileManagerService
     {
         private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public FileManagerService(IWebHostEnvironment webHostEnvironment)
+        public FileManagerService(IWebHostEnvironment webHostEnvironment, IHttpContextAccessor httpContextAccessor)
         {
             _webHostEnvironment = webHostEnvironment;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<string> UploadFileAsync(IFormFile file, int id, string entityType, string existingImagePath = "")
@@ -19,6 +21,9 @@ namespace MovieStream.Core.Application.Services
             {
                 return existingImagePath;
             }
+
+            var request = _httpContextAccessor.HttpContext!.Request!;
+            var baseUrl = $"{request.Scheme}://{request.Host}";
 
             string storagePath = Path.Combine(_webHostEnvironment.WebRootPath, "Images", entityType, id.ToString());
             string relativePath = $"/Images/{entityType}/{id}";
@@ -31,21 +36,27 @@ namespace MovieStream.Core.Application.Services
             string fileName = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
             string newFilePath = Path.Combine(storagePath, fileName);
 
-            using (var stream = new FileStream(newFilePath, FileMode.Create))
-            {
-                await file.CopyToAsync(stream);
-            }
+            using var stream = new FileStream(newFilePath, FileMode.Create);
+            await file.CopyToAsync(stream);
 
             if (!string.IsNullOrEmpty(existingImagePath))
             {
-                string oldImagePath = Path.Combine(storagePath, Path.GetFileName(existingImagePath));
-                if (System.IO.File.Exists(oldImagePath))
+                try
                 {
-                    System.IO.File.Delete(oldImagePath);
+                    string oldImageName = Path.GetFileName(existingImagePath);
+                    string oldImagePath = Path.Combine(storagePath, oldImageName);
+                    if (System.IO.File.Exists(oldImagePath))
+                    {
+                        System.IO.File.Delete(oldImagePath);
+                    }
+                }
+                catch
+                {
+                    
                 }
             }
 
-            return $"{relativePath}/{fileName}";
+            return $"{baseUrl}{relativePath}/{fileName}";
         }
 
         public void DeleteFile(int id, string entityType = "")
