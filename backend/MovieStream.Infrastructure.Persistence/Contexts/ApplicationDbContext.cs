@@ -114,7 +114,7 @@ namespace MovieStream.Infrastructure.Persistence.Contexts
                 .HasMaxLength(500);
 
             modelBuilder.Entity<TvSerie>()
-                .Property(ts => ts.ImagePath)
+                .Property(ts => ts.ImageUrl)
                 .IsRequired(false)
                 .IsUnicode(false);
 
@@ -135,7 +135,7 @@ namespace MovieStream.Infrastructure.Persistence.Contexts
                 .HasMaxLength(500);
 
             modelBuilder.Entity<Movie>()
-                .Property(m => m.ImagePath)
+                .Property(m => m.ImageUrl)
                 .IsRequired(false)
                 .IsUnicode(false);
 
