@@ -22,8 +22,8 @@ namespace MovieStream.Core.Application.Features.Movies.Commands.UpdateMovie
 
 
         [SwaggerIgnore]
-        public string? ImagePath { get; set; }
-        public IFormFile ImageFile { get; set; }
+        public string? ImageUrl { get; set; }
+        public IFormFile? ImageFile { get; set; }
     }
 
     public class UpdateMovieCommandHandler : IRequestHandler<UpdateMovieCommand, Response<MovieUpdateResponse>>

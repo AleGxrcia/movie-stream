@@ -14,7 +14,7 @@ namespace MovieStream.Core.Application.DTOs.TvSerie
 
 
         [JsonIgnore]
-        public string? ImagePath { get; set; }
+        public string? ImageUrl { get; set; }
         public IFormFile ImageFile { get; set; }
     }
 }

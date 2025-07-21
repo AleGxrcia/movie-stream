@@ -17,6 +17,8 @@ namespace MovieStream.Core.Application
             services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
             services.AddTransient<IFileManagerService, FileManagerService>();
+
+            services.AddHttpContextAccessor();
         }
     }
 }

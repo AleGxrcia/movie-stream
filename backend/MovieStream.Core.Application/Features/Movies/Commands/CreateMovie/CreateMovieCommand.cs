@@ -6,7 +6,6 @@ using MovieStream.Core.Application.Interfaces.Repositories;
 using MovieStream.Core.Application.Wrappers;
 using MovieStream.Core.Domain.Entities;
 using Swashbuckle.AspNetCore.Annotations;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace MovieStream.Core.Application.Features.Movies.Commands.CreateMovie
 {
@@ -21,7 +20,7 @@ namespace MovieStream.Core.Application.Features.Movies.Commands.CreateMovie
 
 
         [SwaggerIgnore]
-        public string? ImagePath { get; set; }
+        public string? ImageUrl { get; set; }
         public IFormFile ImageFile { get; set; }
     }
 
