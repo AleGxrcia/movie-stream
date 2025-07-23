@@ -34,8 +34,8 @@ export const NavBar = () => {
           </>
         ) : (
           <>
-            <Link to="/login">Profile</Link>
-            <Link to="/register">Profile</Link>
+            <Link to="/login">Login</Link>
+            <Link to="/register">Register</Link>
           </>
         )}
       </div>
