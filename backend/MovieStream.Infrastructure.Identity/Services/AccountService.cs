@@ -121,7 +121,7 @@ namespace MovieStream.Infrastructure.Identity.Services
             return new Response<AuthenticationResponse>(response, "Token refreshed successfully.");
         }
 
-        public async Task<Response<string>> RevokeTokenAsync(string token)
+        public async Task<Response> RevokeTokenAsync(string token)
         {
             var user = await _identityContext.Users.Include(u => u.RefreshTokens)
                 .SingleOrDefaultAsync(u => u.RefreshTokens.Any(t => t.Token == token));
@@ -143,10 +143,10 @@ namespace MovieStream.Infrastructure.Identity.Services
             _identityContext.Update(user);
             await _identityContext.SaveChangesAsync();
 
-            return new Response<string>(null, "Token revoked successfully.");
+            return new Response(true, "Token revoked successfully.");
         }
 
-        public async Task<Response<RegisterResponse>> RegisterBasicUserAsync(RegisterRequest request, string origin)
+        public async Task<Response> RegisterBasicUserAsync(RegisterRequest request, string origin)
         {
             var userWithSameUserName = await _userManager.FindByNameAsync(request.UserName);
             if (userWithSameUserName != null)
@@ -189,17 +189,12 @@ namespace MovieStream.Infrastructure.Identity.Services
                 }
             });
 
-            var response = new RegisterResponse
-            {
-                HasError = false,
-            };
-
-            return new Response<RegisterResponse>(response,
+            return new Response(true,
                 "User registered successfully. Please check your email to confirm your account."
             );
         }
 
-        public async Task<Response<RegisterResponse>> RegisterContentManagerUserAsync(RegisterRequest request, string origin)
+        public async Task<Response> RegisterContentManagerUserAsync(RegisterRequest request, string origin)
         {
             var userWithSameUserName = await _userManager.FindByNameAsync(request.UserName);
             if (userWithSameUserName != null)
@@ -231,12 +226,10 @@ namespace MovieStream.Infrastructure.Identity.Services
 
             await _userManager.AddToRoleAsync(user, nameof(Roles.ContentManager));
 
-            return new Response<RegisterResponse>(new RegisterResponse { HasError = false },
-                "Content manager registered successfully."
-            );
+            return new Response(true, "Content manager registered successfully.");
         }
 
-        public async Task<Response<RegisterResponse>> RegisterAdminUserAsync(RegisterRequest request, string origin)
+        public async Task<Response> RegisterAdminUserAsync(RegisterRequest request, string origin)
         {
             var userWithSameUserName = await _userManager.FindByNameAsync(request.UserName);
             if (userWithSameUserName != null)
@@ -268,9 +261,7 @@ namespace MovieStream.Infrastructure.Identity.Services
 
             await _userManager.AddToRoleAsync(user, nameof(Roles.Admin));
 
-            return new Response<RegisterResponse>(new RegisterResponse { HasError = false },
-                "Admin registered successfully."
-            );
+            return new Response(true, "Admin registered successfully.");
         }
 
         public async Task<Response<string>> ConfirmAccountAsync(string userId, string token)
@@ -292,7 +283,7 @@ namespace MovieStream.Infrastructure.Identity.Services
             return new Response<string>(user.Id, $"Account confirmed for {user.Email}. You can now use the app.");
         }
 
-        public async Task<Response<ForgotPasswordResponse>> ForgotPasswordAsync(ForgotPasswordRequest request, string origin)
+        public async Task<Response> ForgotPasswordAsync(ForgotPasswordRequest request, string origin)
         {
             var user = await _userManager.FindByEmailAsync(request.Email);
             if (user == null)
@@ -314,12 +305,10 @@ namespace MovieStream.Infrastructure.Identity.Services
                 }
             });
 
-            return new Response<ForgotPasswordResponse>(new ForgotPasswordResponse { HasError = false },
-                "Password reset link sent to your email."
-            );
+            return new Response(true, "Password reset link sent to your email.");
         }
 
-        public async Task<Response<ResetPasswordResponse>> ResetPasswordAsync(ResetPasswordRequest request)
+        public async Task<Response> ResetPasswordAsync(ResetPasswordRequest request)
         {
             var user = await _userManager.FindByEmailAsync(request.Email);
             if (user == null)
@@ -335,9 +324,7 @@ namespace MovieStream.Infrastructure.Identity.Services
                     $" {string.Join(", ", result.Errors.Select(e => e.Description))}", (int)HttpStatusCode.BadRequest);
             }
 
-            return new Response<ResetPasswordResponse>(new ResetPasswordResponse { HasError = false },
-                "Password reset successfully."
-            );
+            return new Response(true, "Password reset successfully.");
         }
 
         private async Task<JwtSecurityToken> GenerateJWToken(AppUser user)
