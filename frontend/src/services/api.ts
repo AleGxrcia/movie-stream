@@ -1,6 +1,6 @@
 import axios, { AxiosError, type AxiosResponse } from 'axios';
 import { API_BASE_URL } from '../constants/api';
-import type { BackendResponse } from '../types/api.types';
+import type { BackendResponse, BaseBackendResponse } from '../types/api.types';
 import { extractErrorMessage } from '../utils/errorUtils';
 
 
@@ -21,7 +21,7 @@ export const setupInterceptors = (store: any) => {
     });
 
     apiClient.interceptors.response.use(
-        (response: AxiosResponse<BackendResponse<unknown>>) => {
+        (response: AxiosResponse<BaseBackendResponse>) => {
             const { data } = response;
             if (data.succeeded === false) {
                 const errorMessage = extractErrorMessage({ response } as AxiosError<BackendResponse<unknown>>);
