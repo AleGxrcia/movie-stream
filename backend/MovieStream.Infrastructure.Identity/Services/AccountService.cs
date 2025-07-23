@@ -1,19 +1,22 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using MovieStream.Core.Application.DTOs.Account;
+using MovieStream.Core.Application.DTOs.Email;
 using MovieStream.Core.Application.Enums;
+using MovieStream.Core.Application.Exceptions;
 using MovieStream.Core.Application.Interfaces.Services;
+using MovieStream.Core.Application.Wrappers;
 using MovieStream.Core.Domain.Settings;
+using MovieStream.Infrastructure.Identity.Contexts;
 using MovieStream.Infrastructure.Identity.Entities;
 using System.IdentityModel.Tokens.Jwt;
+using System.Net;
 using System.Security.Claims;
-using System.Text;
-using Microsoft.Extensions.Options;
 using System.Security.Cryptography;
-using MovieStream.Infrastructure.Identity.Contexts;
-using MovieStream.Core.Application.DTOs.Email;
-using Microsoft.EntityFrameworkCore;
+using System.Text;
 
 namespace MovieStream.Infrastructure.Identity.Services
 {
@@ -35,72 +38,61 @@ namespace MovieStream.Infrastructure.Identity.Services
             _identityContext = identityContext;
         }
 
-        public async Task<AuthenticationResponse> AuthenticateAsync(AuthenticationRequest request)
+        public async Task<Response<AuthenticationResponse>> AuthenticateAsync(AuthenticationRequest request)
         {
-            AuthenticationResponse response = new();
             var user = await _userManager.FindByEmailAsync(request.Email);
             if (user == null)
             {
-                response.HasError = true;
-                response.Error = $"No account registered with {request.Email}.";
-                return response;
+                throw new ApiException($"No account registered with {request.Email}.", (int)HttpStatusCode.Unauthorized);
             }
 
             var result = await _signInManager.PasswordSignInAsync(user.UserName, request.Password, false, lockoutOnFailure: false);
             if (!result.Succeeded)
             {
-                response.HasError = true;
-                response.Error = $"Invalid email or password.";
-                return response;
+                throw new ApiException($"Invalid email or password.", (int)HttpStatusCode.Unauthorized);
             }
 
             JwtSecurityToken jwtSecurityToken = await GenerateJWToken(user);
             var refreshToken = GenerateRefreshToken(user);
 
-            response.Id = user.Id;
-            response.Email = user.Email;
-            response.UserName = user.UserName;
-
-            var rolesList = await _userManager.GetRolesAsync(user).ConfigureAwait(false);
-            response.Roles = rolesList.ToList();
-            response.IsVerified = user.EmailConfirmed;
-            response.JWToken = new JwtSecurityTokenHandler().WriteToken(jwtSecurityToken);
-            response.RefreshToken = refreshToken.Token;
+            var response = new AuthenticationResponse
+            {
+                Id = user.Id,
+                Email = user.Email,
+                UserName = user.UserName,
+                Roles = (await _userManager.GetRolesAsync(user).ConfigureAwait(false)).ToList(),
+                IsVerified = user.EmailConfirmed,
+                JWToken = new JwtSecurityTokenHandler().WriteToken(jwtSecurityToken),
+                RefreshToken = refreshToken.Token,
+            };
 
             user.RefreshTokens.Add(refreshToken);
             _identityContext.Update(user);
             await _identityContext.SaveChangesAsync();
 
-            return response;
+            return new Response<AuthenticationResponse>(response, "User authenticated successfully.");
         }
 
-        public async Task<AuthenticationResponse> RefreshTokenAsync(string refreshTokenValue)
+        public async Task<Response<AuthenticationResponse>> RefreshTokenAsync(string refreshTokenValue)
         {
-            var response = new AuthenticationResponse();
             var user = await _identityContext.Users.Include(u => u.RefreshTokens)
                 .SingleOrDefaultAsync(u => u.RefreshTokens.Any(u => u.Token == refreshTokenValue));
 
             if (user == null)
             {
-                response.HasError = true;
-                response.Error = "Invalid token: User not found.";
-                return response;
+                throw new ApiException("Invalid token: User not found.", (int)HttpStatusCode.BadRequest);
             }
 
             var refreshToken = user.RefreshTokens.SingleOrDefault(x => x.Token == refreshTokenValue);
 
             if (refreshToken == null)
             {
-                response.HasError = true;
-                response.Error = "Invalid token: Refresh token not found for user.";
-                return response;
+                throw new ApiException("Invalid token: Refresh token not found for user.", (int)HttpStatusCode.BadRequest);
             }
 
             if (!refreshToken.IsActive)
             {
-                response.HasError = true;
-                response.Error = "Invalid token: Refresh token is not active";
-                return response;
+                throw new ApiException("Invalid token: Refresh token is not active.", (int)HttpStatusCode.BadRequest);
             }
 
             var newRefreshToken = GenerateRefreshToken(user);
@@ -115,53 +107,57 @@ namespace MovieStream.Infrastructure.Identity.Services
 
             var jwtToken = await GenerateJWToken(user);
 
-            response.Id = user.Id;
-            response.Email = user.Email;
-            response.UserName = user.UserName;
-            var rolesList = await _userManager.GetRolesAsync(user).ConfigureAwait(false);
-            response.Roles = rolesList.ToList();
-            response.IsVerified = user.EmailConfirmed;
-            response.JWToken = new JwtSecurityTokenHandler().WriteToken(jwtToken);
-            response.RefreshToken = newRefreshToken.Token;
+            var response = new AuthenticationResponse
+            {
+                Id = user.Id,
+                Email = user.Email,
+                UserName = user.UserName,
+                Roles = (await _userManager.GetRolesAsync(user).ConfigureAwait(false)).ToList(),
+                IsVerified = user.EmailConfirmed,
+                JWToken = new JwtSecurityTokenHandler().WriteToken(jwtToken),
+                RefreshToken = refreshToken.Token,
+            };
 
-            return response;
+            return new Response<AuthenticationResponse>(response, "Token refreshed successfully.");
         }
 
-        public async Task<bool> RevokeTokenAsync(string token)
+        public async Task<Response<string>> RevokeTokenAsync(string token)
         {
             var user = await _identityContext.Users.Include(u => u.RefreshTokens)
                 .SingleOrDefaultAsync(u => u.RefreshTokens.Any(t => t.Token == token));
 
-            if (user == null) return false;
+            if (user == null)
+            {
+                throw new ApiException("Invalid token: User not found.", (int)HttpStatusCode.BadRequest);
+            }
 
             var refreshToken = user.RefreshTokens.SingleOrDefault(x => x.Token == token);
 
-            if (refreshToken == null || !refreshToken.IsActive) return false;
+            if (refreshToken == null || !refreshToken.IsActive)
+            {
+                throw new ApiException("Invalid token: Refresh token not found for user or is not active.",
+                    (int)HttpStatusCode.BadRequest);
+            }
 
             refreshToken.Revoked = DateTime.UtcNow;
             _identityContext.Update(user);
             await _identityContext.SaveChangesAsync();
 
-            return true;
+            return new Response<string>(null, "Token revoked successfully.");
         }
 
-        public async Task<RegisterResponse> RegisterBasicUserAsync(RegisterRequest request, string origin)
+        public async Task<Response<RegisterResponse>> RegisterBasicUserAsync(RegisterRequest request, string origin)
         {
-            RegisterResponse response = new() { HasError = false };
             var userWithSameUserName = await _userManager.FindByNameAsync(request.UserName);
             if (userWithSameUserName != null)
             {
-                response.HasError = true;
-                response.Error = $"Username '{request.UserName}' is already taken.";
-                return response;
+                throw new ApiException($"Username '{request.UserName}' is already taken.", (int)HttpStatusCode.BadRequest);
             }
 
             var userWithSameEmail = await _userManager.FindByEmailAsync(request.Email);
             if (userWithSameEmail != null)
             {
-                response.HasError = true;
-                response.Error = $"Email '{request.Email}' is already registered.";
-                return response;
+                throw new ApiException($"Email '{request.Email}' is already registered.", (int)HttpStatusCode.BadRequest);
             }
 
             var user = new AppUser
@@ -173,48 +169,48 @@ namespace MovieStream.Infrastructure.Identity.Services
             };
 
             var result = await _userManager.CreateAsync(user, request.Password);
-            if (result.Succeeded)
+            if (!result.Succeeded)
             {
-                await _userManager.AddToRoleAsync(user, Roles.User.ToString());
-                var verificationUri = await SendVerificationEmailUri(user, origin);
-                await _emailService.SendAsync(new EmailRequest()
+                throw new ApiException($"An error occurred while trying to register the user:" +
+                    $" {string.Join(", ", result.Errors.Select(e => e.Description))}", (int)HttpStatusCode.BadRequest);
+            }
+
+            await _userManager.AddToRoleAsync(user, Roles.User.ToString());
+            var verificationUri = await SendVerificationEmailUri(user, origin);
+            await _emailService.SendAsync(new EmailRequest()
+            {
+                To = user.Email,
+                Subject = "Confirm Your MovieStream Account",
+                HtmlBodyTemplateName = "ConfirmAccount",
+                TemplateData = new Dictionary<string, object>
                 {
-                    To = user.Email,
-                    Subject = "Confirm Your MovieStream Account",
-                    HtmlBodyTemplateName = "ConfirmAccount",
-                    TemplateData = new Dictionary<string, object>
-                    {
-                        { "UserName", user.UserName },
-                        { "VerificationUrl", verificationUri }
-                    }
-                });
-            }
-            else
+                    { "UserName", user.UserName },
+                    { "VerificationUrl", verificationUri }
+                }
+            });
+
+            var response = new RegisterResponse
             {
-                response.HasError = true;
-                response.Error = $"An error occurred while trying to register the user: {string.Join(", ", result.Errors.Select(e => e.Description))}";
-                return response;
-            }
-            return response;
+                HasError = false,
+            };
+
+            return new Response<RegisterResponse>(response,
+                "User registered successfully. Please check your email to confirm your account."
+            );
         }
 
-        public async Task<RegisterResponse> RegisterContentManagerUserAsync(RegisterRequest request, string origin)
+        public async Task<Response<RegisterResponse>> RegisterContentManagerUserAsync(RegisterRequest request, string origin)
         {
-            RegisterResponse response = new() { HasError = false };
             var userWithSameUserName = await _userManager.FindByNameAsync(request.UserName);
             if (userWithSameUserName != null)
             {
-                response.HasError = true;
-                response.Error = $"Username '{request.UserName}' is already taken.";
-                return response;
+                throw new ApiException($"Username '{request.UserName}' is already taken.", (int)HttpStatusCode.BadRequest);
             }
 
             var userWithSameEmail = await _userManager.FindByEmailAsync(request.Email);
             if (userWithSameEmail != null)
             {
-                response.HasError = true;
-                response.Error = $"Email '{request.Email}' is already registered.";
-                return response;
+                throw new ApiException($"Email '{request.Email}' is already registered.", (int)HttpStatusCode.BadRequest);
             }
 
             var user = new AppUser
@@ -227,36 +223,31 @@ namespace MovieStream.Infrastructure.Identity.Services
             };
 
             var result = await _userManager.CreateAsync(user, request.Password);
-            if (result.Succeeded)
+            if (!result.Succeeded)
             {
-                await _userManager.AddToRoleAsync(user, nameof(Roles.ContentManager));
+                throw new ApiException($"An error occurred while trying to register the user:" +
+                    $" {string.Join(", ", result.Errors.Select(e => e.Description))}", (int)HttpStatusCode.BadRequest);
             }
-            else
-            {
-                response.HasError = true;
-                response.Error = $"An error occurred while trying to register the user: {string.Join(", ", result.Errors.Select(e => e.Description))}";
-                return response;
-            }
-            return response;
+
+            await _userManager.AddToRoleAsync(user, nameof(Roles.ContentManager));
+
+            return new Response<RegisterResponse>(new RegisterResponse { HasError = false },
+                "Content manager registered successfully."
+            );
         }
 
-        public async Task<RegisterResponse> RegisterAdminUserAsync(RegisterRequest request, string origin)
+        public async Task<Response<RegisterResponse>> RegisterAdminUserAsync(RegisterRequest request, string origin)
         {
-            RegisterResponse response = new() { HasError = false };
             var userWithSameUserName = await _userManager.FindByNameAsync(request.UserName);
             if (userWithSameUserName != null)
             {
-                response.HasError = true;
-                response.Error = $"Username '{request.UserName}' is already taken.";
-                return response;
+                throw new ApiException($"Username '{request.UserName}' is already taken.", (int)HttpStatusCode.BadRequest);
             }
 
             var userWithSameEmail = await _userManager.FindByEmailAsync(request.Email);
             if (userWithSameEmail != null)
             {
-                response.HasError = true;
-                response.Error = $"Email '{request.Email}' is already registered.";
-                return response;
+                throw new ApiException($"Email '{request.Email}' is already registered.", (int)HttpStatusCode.BadRequest);
             }
 
             var user = new AppUser
@@ -269,40 +260,44 @@ namespace MovieStream.Infrastructure.Identity.Services
             };
 
             var result = await _userManager.CreateAsync(user, request.Password);
-            if (result.Succeeded)
+            if (!result.Succeeded)
             {
-                await _userManager.AddToRoleAsync(user, nameof(Roles.Admin));
+                throw new ApiException($"An error occurred while trying to register the user:" +
+                    $" {string.Join(", ", result.Errors.Select(e => e.Description))}", (int)HttpStatusCode.BadRequest);
             }
-            else
-            {
-                response.HasError = true;
-                response.Error = $"An error occurred while trying to register the user: {string.Join(", ", result.Errors.Select(e => e.Description))}";
-                return response;
-            }
-            return response;
+
+            await _userManager.AddToRoleAsync(user, nameof(Roles.Admin));
+
+            return new Response<RegisterResponse>(new RegisterResponse { HasError = false },
+                "Admin registered successfully."
+            );
         }
 
-        public async Task<string> ConfirmAccountAsync(string userId, string token)
+        public async Task<Response<string>> ConfirmAccountAsync(string userId, string token)
         {
             var user = await _userManager.FindByIdAsync(userId);
-            if (user == null) return "Error: User not found.";
+            if (user == null) 
+            {
+                throw new ApiException("User not found.", (int)HttpStatusCode.NotFound);
+            }
 
             token = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(token));
             var result = await _userManager.ConfirmEmailAsync(user, token);
-            if (!result.Succeeded) return $"Error confirming email: {string.Join(", ", result.Errors.Select(e => e.Description))}";
+            if (!result.Succeeded)
+            {
+                throw new ApiException($"Error confirming email:" +
+                    $" {string.Join(", ", result.Errors.Select(e => e.Description))}", (int)HttpStatusCode.BadRequest);
+            }
 
-            return $"Account confirmed for {user.Email}. You can now use the app.";
+            return new Response<string>(user.Id, $"Account confirmed for {user.Email}. You can now use the app.");
         }
 
-        public async Task<ForgotPasswordResponse> ForgotPasswordAsync(ForgotPasswordRequest request, string origin)
+        public async Task<Response<ForgotPasswordResponse>> ForgotPasswordAsync(ForgotPasswordRequest request, string origin)
         {
-            ForgotPasswordResponse response = new() { HasError = false };
             var user = await _userManager.FindByEmailAsync(request.Email);
             if (user == null)
             {
-                response.HasError = true;
-                response.Error = $"No account registered with {request.Email}.";
-                return response;
+                throw new ApiException($"No account registered with {request.Email}.", (int)HttpStatusCode.NotFound);
             }
 
             var resetTokenUri = await SendForgotPasswordUri(user, origin);
@@ -319,29 +314,30 @@ namespace MovieStream.Infrastructure.Identity.Services
                 }
             });
 
-            return response;
+            return new Response<ForgotPasswordResponse>(new ForgotPasswordResponse { HasError = false },
+                "Password reset link sent to your email."
+            );
         }
 
-        public async Task<ResetPasswordResponse> ResetPasswordAsync(ResetPasswordRequest request)
+        public async Task<Response<ResetPasswordResponse>> ResetPasswordAsync(ResetPasswordRequest request)
         {
-            ResetPasswordResponse response = new() { HasError = false };
             var user = await _userManager.FindByEmailAsync(request.Email);
             if (user == null)
             {
-                response.HasError = true;
-                response.Error = $"Error: User not found.";
-                return response;
+                throw new ApiException("User not found.", (int)HttpStatusCode.NotFound);
             }
 
             var decodedToken = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(request.Token));
             var result = await _userManager.ResetPasswordAsync(user, decodedToken, request.Password);
             if (!result.Succeeded)
             {
-                response.HasError = true;
-                response.Error = $"Error: resetting password: {string.Join(", ", result.Errors.Select(e => e.Description))}";
-                return response;
+                throw new ApiException($"Error resetting password:" +
+                    $" {string.Join(", ", result.Errors.Select(e => e.Description))}", (int)HttpStatusCode.BadRequest);
             }
-            return response;
+
+            return new Response<ResetPasswordResponse>(new ResetPasswordResponse { HasError = false },
+                "Password reset successfully."
+            );
         }
 
         private async Task<JwtSecurityToken> GenerateJWToken(AppUser user)
