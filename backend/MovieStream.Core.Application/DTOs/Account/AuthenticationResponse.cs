@@ -7,8 +7,6 @@
         public string Email { get; set; }
         public List<string> Roles { get; set; }
         public bool IsVerified { get; set; }
-        public bool HasError { get; set; }
-        public string? Error { get; set; }
         public string? JWToken { get; set; }
         public string? RefreshToken { get; set; }
     }
