@@ -24,7 +24,7 @@ namespace MovieStream.WebApi.Middlewares
             {
                 var response = httpContext.Response;
                 response.ContentType = "application/json";
-                var responseModel = new Response<string>();
+                var responseModel = new Response(false);
 
                 switch (error)
                 {
