@@ -1,9 +1,9 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import type { AuthResponse, LoginCredentials, RegisterData } from "../types/auth.types";
+import type { AuthData, LoginCredentials, RegisterData } from "../types/auth.types";
 import { loginUser, registerUser } from "../services/authAPI";
 
 interface AuthState {
-    user: AuthResponse | null;
+    user: AuthData | null;
     token: string | null;
     isAuthenticated: boolean;
     status: 'idle' | 'loading' | 'succeeded' | 'failed';
@@ -20,13 +20,13 @@ const initialState: AuthState = {
 
 export const login = createAsyncThunk('auth/login', async (credentials: LoginCredentials) => {
     const response = await loginUser(credentials);
-    localStorage.setItem('token', response.token);
+    localStorage.setItem('token', response.data.jwToken);
     return response;
 });
 
 export const register = createAsyncThunk('auth/register', async (userData: RegisterData) => {
     const response = await registerUser(userData);
-    localStorage.setItem('token', response.token);
+    localStorage.setItem('token', response.data.jwToken);
     return response;
 });
 
@@ -49,8 +49,8 @@ const authSlice = createSlice({
             .addCase(login.fulfilled, (state, action) => {
                 state.status = 'succeeded';
                 state.isAuthenticated = true;
-                state.user = action.payload;
-                state.token = action.payload.token;
+                state.user = action.payload.data;
+                state.token = action.payload.data.jwToken;
             })
             .addCase(login.rejected, (state, action) => {
                 state.status = 'failed';
@@ -62,8 +62,8 @@ const authSlice = createSlice({
             .addCase(register.fulfilled, (state, action) => {
                 state.status = 'succeeded';
                 state.isAuthenticated = true;
-                state.user = action.payload;
-                state.token = action.payload.token;
+                state.user = action.payload.data;
+                state.token = action.payload.data.jwToken;
             })
             .addCase(register.rejected, (state, action) => {
                 state.status = 'failed';
