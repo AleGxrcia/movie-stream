@@ -1,18 +1,9 @@
-import axios, { AxiosError, type AxiosResponse } from 'axios';
-import { API_BASE_URL } from '../constants/api';
+import { AxiosError, type AxiosInstance, type AxiosResponse } from 'axios';
 import type { BackendResponse, BaseBackendResponse } from '../types/api.types';
 import { extractErrorMessage } from '../utils/errorUtils';
 
-
-const apiClient = axios.create({
-    baseURL: API_BASE_URL,
-    headers: {
-        'Content-Type': 'application/json',
-    },
-});
-
-export const setupInterceptors = (store: any) => {
-    apiClient.interceptors.request.use((config) => {
+export const setupInterceptors = (axiosInstance: AxiosInstance, store: any) => {
+    axiosInstance.interceptors.request.use((config) => {
         const token = store.getState().auth.token;
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
@@ -20,7 +11,7 @@ export const setupInterceptors = (store: any) => {
         return config;
     });
 
-    apiClient.interceptors.response.use(
+    axiosInstance.interceptors.response.use(
         (response: AxiosResponse<BaseBackendResponse>) => {
             const { data } = response;
             if (data.succeeded === false) {
@@ -45,5 +36,3 @@ export const setupInterceptors = (store: any) => {
         }
     );
 };
-
-export default apiClient;

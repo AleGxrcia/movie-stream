@@ -1,7 +1,4 @@
-import { useEffect, useState } from "react"
-import type { Movie } from "../features/movies/types/movie.types"
-import { fetchMoviesAPI } from "../features/movies/api/moviesAPI";
-import { extractErrorMessage, type THttpError } from "../utils/errorUtils";
+import { useEffect } from "react"
 import MovieCard from "../features/movies/components/MovieCard";
 import type { AppDispatch } from "../app/store";
 import { useDispatch, useSelector } from "react-redux";

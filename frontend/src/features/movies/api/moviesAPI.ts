@@ -1,4 +1,4 @@
-import apiClient from '../../../services/api';
+import apiClient from '../../../services/apiClient';
 import type { BackendResponse } from '../../../types/api.types';
 import type { FetchMoviesParams, Movie } from '../types/movie.types';
 
