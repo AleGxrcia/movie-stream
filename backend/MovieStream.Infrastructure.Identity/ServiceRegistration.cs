@@ -63,7 +63,16 @@ namespace MovieStream.Infrastructure.Identity
                 };
 
                 options.Events = new JwtBearerEvents()
-                {
+                {   
+                    OnMessageReceived = ctx =>
+                    {
+                        ctx.Request.Cookies.TryGetValue("accessToken", out var accessToken);
+                        if (!string.IsNullOrEmpty(accessToken))
+                        {
+                            ctx.Token = accessToken;
+                        }
+                        return Task.CompletedTask;
+                    },
                     OnAuthenticationFailed = x =>
                     {
                         x.NoResult();
@@ -96,6 +105,8 @@ namespace MovieStream.Infrastructure.Identity
             #region Services
             services.AddTransient<IAccountService, AccountService>();
             #endregion
+
+            services.AddHttpContextAccessor();
         }
     }
 }

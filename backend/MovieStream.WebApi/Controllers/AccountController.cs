@@ -74,17 +74,18 @@ namespace MovieStream.WebApi.Controllers
         }
 
         [HttpPost("refresh-token")]
-        public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequest request)
+        public async Task<IActionResult> RefreshToken()
         {
-            var response = await _accountService.RefreshTokenAsync(request.Token);
+            var refreshToken = Request.Cookies["refreshToken"];
+            var response = await _accountService.RefreshTokenAsync(refreshToken);
             return Ok(response);
         }
 
         [Authorize]
         [HttpPost("revoke-token")]
-        public async Task<IActionResult> RevokeToken([FromBody] RefreshTokenRequest request)
+        public async Task<IActionResult> RevokeToken([FromBody] RefreshTokenRequest? request = null)
         {
-            var token = request.Token ?? Request.Cookies["refreshToken"];
+            var token = request?.Token ?? Request.Cookies["refreshToken"];
             if (string.IsNullOrEmpty(token))
             {
                 return BadRequest(new { message = "Token is required" });
