@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -27,15 +28,18 @@ namespace MovieStream.Infrastructure.Identity.Services
         private readonly IEmailService _emailService;
         private readonly JwtSettings _jwtSettings;
         private readonly IdentityContext _identityContext;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
         public AccountService(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager,
-            IEmailService emailService, IOptions<JwtSettings> jwtSettings, IdentityContext identityContext)
+            IEmailService emailService, IOptions<JwtSettings> jwtSettings, IdentityContext identityContext,
+            IHttpContextAccessor httpContextAccessor)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _emailService = emailService;
             _jwtSettings = jwtSettings.Value;
             _identityContext = identityContext;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<Response<AuthenticationResponse>> AuthenticateAsync(AuthenticationRequest request)
@@ -65,6 +69,9 @@ namespace MovieStream.Infrastructure.Identity.Services
                 JWToken = new JwtSecurityTokenHandler().WriteToken(jwtSecurityToken),
                 RefreshToken = refreshToken.Token,
             };
+
+            SetTokenCookie("accessToken", response.JWToken, jwtSecurityToken.ValidTo);
+            SetTokenCookie("refreshToken", response.RefreshToken, refreshToken.Expires);
 
             user.RefreshTokens.Add(refreshToken);
             _identityContext.Update(user);
@@ -115,8 +122,11 @@ namespace MovieStream.Infrastructure.Identity.Services
                 Roles = (await _userManager.GetRolesAsync(user).ConfigureAwait(false)).ToList(),
                 IsVerified = user.EmailConfirmed,
                 JWToken = new JwtSecurityTokenHandler().WriteToken(jwtToken),
-                RefreshToken = refreshToken.Token,
+                RefreshToken = newRefreshToken.Token,
             };
+
+            SetTokenCookie("accessToken", response.JWToken, jwtToken.ValidTo);
+            SetTokenCookie("refreshToken", response.RefreshToken, newRefreshToken.Expires);
 
             return new Response<AuthenticationResponse>(response, "Token refreshed successfully.");
         }
@@ -142,6 +152,9 @@ namespace MovieStream.Infrastructure.Identity.Services
             refreshToken.Revoked = DateTime.UtcNow;
             _identityContext.Update(user);
             await _identityContext.SaveChangesAsync();
+
+            RemoveTokenCookie("accessToken");
+            RemoveTokenCookie("refreshToken");
 
             return new Response(true, "Token revoked successfully.");
         }
@@ -398,6 +411,23 @@ namespace MovieStream.Infrastructure.Identity.Services
             var randomBytes = new byte[length];
             rngCryptoServiceProvider.GetBytes(randomBytes);
             return Convert.ToBase64String(randomBytes);
+        }
+
+        private void SetTokenCookie(string tokenName, string tokenValue, DateTime expiration)
+        {
+            var cookieOptions = new CookieOptions
+            {
+                HttpOnly = true,
+                Expires = expiration.ToLocalTime(),
+                Secure = true,
+                IsEssential = true,
+                SameSite = SameSiteMode.None
+            };
+            _httpContextAccessor.HttpContext?.Response.Cookies.Append(tokenName, tokenValue, cookieOptions);
+        }
+        private void RemoveTokenCookie(string tokenName)
+        {
+            _httpContextAccessor.HttpContext?.Response.Cookies.Delete(tokenName);
         }
     }
 }
