@@ -64,7 +64,7 @@ else
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
-app.UseCors("AllowAll");
+app.UseCors("CorsPolicy");
 
 app.UseAuthentication();
 app.UseAuthorization();

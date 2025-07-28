@@ -76,6 +76,14 @@ namespace MovieStream.WebApi.Extensions
                                .AllowAnyHeader()
                                .AllowAnyMethod();
                     });
+
+                options.AddPolicy("CorsPolicy", builder =>
+                {
+                    builder.WithOrigins("http://localhost:5173")
+                           .AllowAnyMethod()
+                           .AllowAnyHeader()
+                           .AllowCredentials();
+                });
             });
         }
     }
