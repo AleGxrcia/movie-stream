@@ -1,10 +1,9 @@
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice, isAnyOf } from "@reduxjs/toolkit";
 import type { AuthData, LoginCredentials, RegisterData } from "../types/auth.types";
-import { loginUser, registerUser } from "../services/authAPI";
+import { checkAuthStatus, loginUser, logoutUser, registerUser } from "../services/authAPI";
 
 interface AuthState {
     user: AuthData | null;
-    token: string | null;
     isAuthenticated: boolean;
     status: 'idle' | 'loading' | 'succeeded' | 'failed';
     error: string | null;
@@ -12,66 +11,53 @@ interface AuthState {
 
 const initialState: AuthState = {
     user: null,
-    token: localStorage.getItem('token'),
-    isAuthenticated: !!localStorage.getItem('token'),
+    isAuthenticated: false,
     status: 'idle',
     error: null,
 }
 
 export const login = createAsyncThunk('auth/login', async (credentials: LoginCredentials) => {
-    const response = await loginUser(credentials);
-    localStorage.setItem('token', response.data.jwToken);
-    return response;
+    return await loginUser(credentials);
 });
 
 export const register = createAsyncThunk('auth/register', async (userData: RegisterData) => {
-    const response = await registerUser(userData);
-    localStorage.setItem('token', response.data.jwToken);
-    return response;
+    return await registerUser(userData);
 });
+
+export const logout = createAsyncThunk('auth/logout', async () => {
+    return await logoutUser()
+});
+
+export const checkAuth = createAsyncThunk('auth/checkAuth', async () => {
+    return await checkAuthStatus();
+})
 
 const authSlice = createSlice({
     name: 'auth',
     initialState,
-    reducers: {
-        logout: (state) => {
-            localStorage.removeItem('token');
-            state.user = null;
-            state.token = null;
-            state.isAuthenticated = false;
-        },
-    },
+    reducers: {},
     extraReducers: (builder) => {
         builder
-            .addCase(login.pending, (state) => {
-                state.status = 'loading';
+            .addCase(logout.fulfilled, (state) => {
+                state.user = null;
+                state.isAuthenticated = false;
             })
-            .addCase(login.fulfilled, (state, action) => {
+            .addMatcher(isAnyOf(login.fulfilled, register.fulfilled, checkAuth.fulfilled), (state, action) => {
                 state.status = 'succeeded';
                 state.isAuthenticated = true;
                 state.user = action.payload.data;
-                state.token = action.payload.data.jwToken;
             })
-            .addCase(login.rejected, (state, action) => {
-                state.status = 'failed';
-                state.error = action.error.message || null;
-            })
-            .addCase(register.pending, (state) => {
+            .addMatcher(isAnyOf(login.pending, register.pending, checkAuth.pending, logout.pending), (state) => {
                 state.status = 'loading';
+                state.error = null;
             })
-            .addCase(register.fulfilled, (state, action) => {
-                state.status = 'succeeded';
-                state.isAuthenticated = true;
-                state.user = action.payload.data;
-                state.token = action.payload.data.jwToken;
-            })
-            .addCase(register.rejected, (state, action) => {
+            .addMatcher(isAnyOf(login.rejected, register.rejected, checkAuth.rejected, logout.rejected), (state, action) => {
                 state.status = 'failed';
+                state.isAuthenticated = false;
+                state.user = null;
                 state.error = action.error.message || null;
             });
     },
 });
-
-export const { logout } = authSlice.actions;
 
 export default authSlice.reducer;
