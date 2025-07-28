@@ -14,5 +14,6 @@ namespace MovieStream.Core.Application.Interfaces.Services
         Task<Response> ResetPasswordAsync(ResetPasswordRequest request);
         Task<Response<AuthenticationResponse>> RefreshTokenAsync(string refreshToken);
         Task<Response> RevokeTokenAsync(string token);
+        Task<Response<AuthenticationResponse>> GetCurrentUserAsync();
     }
 }

@@ -8,9 +8,12 @@ import { store } from './app/store';
 import apiClient from './services/apiClient';
 import { setupInterceptors } from './services/axiosInterceptors';
 import apiClientAuth from './services/apiAuth';
+import { checkAuth } from './features/auth/slices/authSlice';
 
 setupInterceptors(apiClient, store);
 setupInterceptors(apiClientAuth, store);
+
+store.dispatch(checkAuth());
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
