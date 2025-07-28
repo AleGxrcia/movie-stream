@@ -159,6 +159,32 @@ namespace MovieStream.Infrastructure.Identity.Services
             return new Response(true, "Token revoked successfully.");
         }
 
+        public async Task<Response<AuthenticationResponse>> GetCurrentUserAsync()
+        {
+            var userEmail = _httpContextAccessor.HttpContext?.User?.Claims?.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+            if (userEmail == null)
+            {
+                throw new ApiException("User not found.", (int)HttpStatusCode.NotFound);
+            }
+
+            var user = await _userManager.FindByEmailAsync(userEmail);
+            if (user == null)
+            {
+                throw new ApiException("User not found.", (int)HttpStatusCode.NotFound);
+            }
+
+            var response = new AuthenticationResponse
+            {
+                Id = user.Id,
+                Email = userEmail,
+                UserName = user.UserName,
+                Roles = (await _userManager.GetRolesAsync(user).ConfigureAwait(false)).ToList(),
+                IsVerified = user.EmailConfirmed
+            };
+
+            return new Response<AuthenticationResponse>(response, "User retrieved successfully.");
+        }
+
         public async Task<Response> RegisterBasicUserAsync(RegisterRequest request, string origin)
         {
             var userWithSameUserName = await _userManager.FindByNameAsync(request.UserName);

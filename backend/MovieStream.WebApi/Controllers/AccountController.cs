@@ -94,5 +94,13 @@ namespace MovieStream.WebApi.Controllers
             var result = await _accountService.RevokeTokenAsync(token);
             return Ok(result);
         }
+
+        [Authorize]
+        [HttpGet("me")]
+        public async Task<IActionResult> Me()
+        {
+            var response = await _accountService.GetCurrentUserAsync();
+            return Ok(response);
+        }
     }
 }
