@@ -8,7 +8,7 @@ export interface Movie {
     imageUrl: string;
     runtime: string;
     releaseDate: string;
-    genres?: Genre;
+    genres?: Genre[];
     productionCompany: ProductionCompany;
 }
 
