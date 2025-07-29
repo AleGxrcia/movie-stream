@@ -1,17 +1,19 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { fetchMoviesAPI } from "../api/moviesAPI";
+import { createMovieAPI, deleteMovieAPI, fetchMovieByIdAPI, fetchMoviesAPI, updateMovieAPI } from "../api/moviesAPI";
 import type { Movie } from "../types/movie.types";
 import type { RootState } from "../../../app/store";
 
 
 interface MoviesState {
     movies: Movie[];
+    selectedMovie: Movie | null;
     status: 'idle' | 'loading' | 'succeeded' | 'failed';
     error: string | null;
 }
 
 const initialState: MoviesState = {
     movies: [],
+    selectedMovie: null,
     status: 'idle',
     error: null,
 };
@@ -20,6 +22,40 @@ export const fetchMoviesAsync = createAsyncThunk(
     'movies/fetchMovies',
     async () => {
         const response = await fetchMoviesAPI();
+        return response.data;
+    }
+);
+
+export const fetchMovieByIdAsync = createAsyncThunk(
+    'movies/fetchMovieById',
+    async (id: number) => {
+        const response = await fetchMovieByIdAPI(id);
+        return response.data;
+    }
+);
+
+export const createMovieAsync = createAsyncThunk(
+    'movies/createMovie',
+    async (movieData: FormData) => {
+        const response = await createMovieAPI(movieData);
+        const newMovieId = response.data;
+        const newMovieResponse = await fetchMovieByIdAPI(newMovieId);
+        return newMovieResponse.data;
+    }
+);
+
+export const updateMovieAsync = createAsyncThunk(
+    'movies/updateMovie',
+    async ({ id, movieData }: { id: number, movieData: FormData }) => {
+        const response = await updateMovieAPI(id, movieData);
+        return response.data;
+    }
+);
+
+export const deleteMovieAsync = createAsyncThunk(
+    'movies/deleteMovie',
+    async (id: number) => {
+        const response = await deleteMovieAPI(id);
         return response.data;
     }
 );
@@ -40,6 +76,29 @@ const moviesSlice = createSlice({
             .addCase(fetchMoviesAsync.rejected, (state, action) => {
                 state.status = 'failed';
                 state.error = action.error.message ?? 'Something went wrong';
+            })
+            .addCase(fetchMovieByIdAsync.pending, (state) => {
+                state.status = 'loading';
+            })
+            .addCase(fetchMovieByIdAsync.fulfilled, (state, action) => {
+                state.status = 'succeeded';
+                state.selectedMovie = action.payload;
+            })
+            .addCase(fetchMovieByIdAsync.rejected, (state, action) => {
+                state.status = 'failed';
+                state.error = action.error.message ?? 'Something went wrong';
+            })
+            .addCase(createMovieAsync.fulfilled, (state, action) => {
+                state.movies.push(action.payload);
+            })
+            .addCase(updateMovieAsync.fulfilled, (state, action) => {
+                const index = state.movies.findIndex((movie) => movie.id === action.payload.id);
+                if (index !== -1) {
+                    state.movies[index] = action.payload;
+                }
+            })
+            .addCase(deleteMovieAsync.fulfilled, (state, action) => {
+                state.movies = state.movies.filter((movie) => movie.id !== action.payload);
             });
     },
 });
@@ -47,5 +106,6 @@ const moviesSlice = createSlice({
 export const selectMovies = (state: RootState) => state.movies.movies;
 export const selectMoviesStatus = (state: RootState) => state.movies.status;
 export const selectMoviesError = (state: RootState) => state.movies.error;
+export const selectSelectedMovie = (state: RootState) => state.movies.selectedMovie;
 
 export default moviesSlice.reducer;

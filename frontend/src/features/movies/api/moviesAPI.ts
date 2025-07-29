@@ -20,3 +20,17 @@ export const createMovieAPI = async (movieData: FormData) => {
     });
     return response.data;
 };
+
+export const updateMovieAPI = async (id: number, movieData: FormData) => {
+    const response = await apiClient.put<BackendResponse<Movie>>(`/movie/${id}`, movieData, {
+        headers: {
+            'Content-Type': 'multipart/form-data',
+        },
+    });
+    return response.data;
+};
+
+export const deleteMovieAPI = async (id: number) => {
+    const response = await apiClient.delete<BackendResponse<number>>(`/movie/${id}`);
+    return response.data;
+};
