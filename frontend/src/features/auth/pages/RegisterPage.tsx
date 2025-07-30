@@ -2,9 +2,9 @@ import { RegisterForm } from "../components/RegisterForm"
 
 const RegisterPage = () => {
 	return (
-		<div className="flex justify-center items-center h-full">
-			<div className="w-full max-w-md p-8 space-y-8 bg-white rounded-lg shadow-md">
-				<h2 className="text-2xl font-bold text-center text-gray-900">
+		<div className="bg-gray-900 min-h-screen flex items-center justify-center p-4">
+			<div className="w-full max-w-md bg-gray-800 rounded-lg shadow-lg p-8">
+				<h2 className="text-3xl font-bold text-center text-white mb-6">
 					Create an account
 				</h2>
 				<RegisterForm />
