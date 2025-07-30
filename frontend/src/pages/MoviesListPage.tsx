@@ -10,30 +10,30 @@ const MoviesListPage = () => {
   const status = useSelector(selectMoviesStatus);
   const error = useSelector(selectMoviesError);
 
-    useEffect(() => {
-      if (status === 'idle') {
-        dispatch(fetchMoviesAsync());
-      }
-    }, [status, dispatch]);
-    
-    if (status === 'loading') {
-        return <div className="text-center">Cargando...</div>;
+  useEffect(() => {
+    if (status === 'idle') {
+      dispatch(fetchMoviesAsync());
     }
+  }, [status, dispatch]);
+  
+  if (status === 'loading') {
+    return <div className="text-center">Cargando...</div>;
+  }
 
-    if (status === 'failed') {
-        return <div className="text-center text-red-500">Error: {error}</div>;
-    }
+  if (status === 'failed') {
+    return <div className="text-center text-red-500">Error: {error}</div>;
+  }
 
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-8">Películas</h1>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-          {movies.map((movie) => (
-            <MovieCard key={movie.id} movie={movie} />
-          ))}
-        </div>
+  return (
+    <div className="mx-auto px-0 py-8 w-[calc(100%-3%)] max-w-[1800px]">
+      <h1 className="text-3xl font-bold mb-8 px-[4%]">Películas</h1>
+      <div className="flex flex-wrap justify-center">
+        {movies.map((movie) => (
+          <MovieCard key={movie.id} movie={movie} />
+        ))}
       </div>
-    );
+    </div>
+  );
 };
 
 export default MoviesListPage;

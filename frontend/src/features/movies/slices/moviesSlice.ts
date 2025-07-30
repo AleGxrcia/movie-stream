@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { createMovieAPI, deleteMovieAPI, fetchMovieByIdAPI, fetchMoviesAPI, updateMovieAPI } from "../api/moviesAPI";
-import type { Movie } from "../types/movie.types";
+import type { FetchMoviesParams, Movie } from "../types/movie.types";
 import type { RootState } from "../../../app/store";
 
 
@@ -20,8 +20,8 @@ const initialState: MoviesState = {
 
 export const fetchMoviesAsync = createAsyncThunk(
     'movies/fetchMovies',
-    async () => {
-        const response = await fetchMoviesAPI();
+    async (params: FetchMoviesParams) => {
+        const response = await fetchMoviesAPI(params);
         return response.data;
     }
 );

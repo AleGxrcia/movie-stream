@@ -1,15 +1,15 @@
-import { Outlet } from 'react-router-dom';
-import { Footer } from './Footer';
-import { NavBar } from './NavBar';
+import { Outlet } from "react-router-dom"
+import { NavBar } from "./NavBar"
+import { Footer } from "./Footer"
 
 export const Layout = () => {
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="bg-[#020916] min-h-screen text-white flex flex-col">
         <NavBar />
-        <main className="flex-grow container mx-auto px-4 py-8">
-          <Outlet />
+        <main className="pt-20 flex-grow">
+            <Outlet />
         </main>
         <Footer />
     </div>
-  );
-};
+  )
+}
