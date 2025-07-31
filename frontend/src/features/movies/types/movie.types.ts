@@ -13,10 +13,11 @@ export interface Movie {
 }
 
 export interface FetchMoviesParams {
-    sortColum?: string;
+    orderBy?: string;
     sortOrder?: 'asc' | 'desc';
     filterBy?: string;
     filterValue?: string;
     pageNumber?: number;
     pageSize?: number;
+    searchTerm?: string;
 }

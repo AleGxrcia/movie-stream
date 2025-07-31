@@ -1,21 +1,26 @@
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import MovieCard from "../features/movies/components/MovieCard";
-import type { AppDispatch } from "../app/store";
-import { useDispatch, useSelector } from "react-redux";
-import { fetchMoviesAsync, selectMovies, selectMoviesError, selectMoviesStatus } from "../features/movies/slices/moviesSlice";
+import { useAppDispatch, useAppSelector } from "../app/hooks";
+import { fetchMoviesAsync, selectMovies, selectMoviesError, selectMoviesMetaData, selectMoviesStatus } from "../features/movies/slices/moviesSlice";
+import Pagination from "../components/common/Pagination";
 
 const MoviesListPage = () => {
-  const dispatch = useDispatch<AppDispatch>();
-  const movies = useSelector(selectMovies);
-  const status = useSelector(selectMoviesStatus);
-  const error = useSelector(selectMoviesError);
+  const dispatch = useAppDispatch();
+  const movies = useAppSelector(selectMovies);
+  const metaData = useAppSelector(selectMoviesMetaData);
+  const status = useAppSelector(selectMoviesStatus);
+  const error = useAppSelector(selectMoviesError);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setpageSize] = useState(16);
 
   useEffect(() => {
-    if (status === 'idle') {
-      dispatch(fetchMoviesAsync());
-    }
-  }, [status, dispatch]);
+    dispatch(fetchMoviesAsync({ pageNumber: currentPage, pageSize: pageSize }));
+  }, [dispatch, currentPage]);
   
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+  };
+
   if (status === 'loading') {
     return <div className="text-center">Cargando...</div>;
   }
@@ -32,6 +37,17 @@ const MoviesListPage = () => {
           <MovieCard key={movie.id} movie={movie} />
         ))}
       </div>
+      {metaData && (
+        <Pagination
+          currentPage={metaData.currentPage}
+          totalPages={metaData.totalPages}
+          onPageChange={handlePageChange}
+          hasNextPage={metaData.hasNextPage}
+          hasPreviousPage={metaData.hasPreviousPage}
+          totalItems={metaData.totalCount}
+          pageSize={metaData.pageSize}
+        />
+      )}
     </div>
   );
 };
