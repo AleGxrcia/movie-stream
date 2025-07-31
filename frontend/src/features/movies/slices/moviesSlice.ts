@@ -2,11 +2,13 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { createMovieAPI, deleteMovieAPI, fetchMovieByIdAPI, fetchMoviesAPI, updateMovieAPI } from "../api/moviesAPI";
 import type { FetchMoviesParams, Movie } from "../types/movie.types";
 import type { RootState } from "../../../app/store";
+import type { MetaData } from "../../../types/pagination.types";
 
 
 interface MoviesState {
     movies: Movie[];
     selectedMovie: Movie | null;
+    metaData: MetaData | null;
     status: 'idle' | 'loading' | 'succeeded' | 'failed';
     error: string | null;
 }
@@ -14,6 +16,7 @@ interface MoviesState {
 const initialState: MoviesState = {
     movies: [],
     selectedMovie: null,
+    metaData: null,
     status: 'idle',
     error: null,
 };
@@ -22,7 +25,7 @@ export const fetchMoviesAsync = createAsyncThunk(
     'movies/fetchMovies',
     async (params: FetchMoviesParams) => {
         const response = await fetchMoviesAPI(params);
-        return response.data;
+        return response;
     }
 );
 
@@ -71,7 +74,8 @@ const moviesSlice = createSlice({
             })
             .addCase(fetchMoviesAsync.fulfilled, (state, action) => {
                 state.status = 'succeeded';
-                state.movies = action.payload;
+                state.movies = action.payload.data;
+                state.metaData = action.payload.meta ?? null;
             })
             .addCase(fetchMoviesAsync.rejected, (state, action) => {
                 state.status = 'failed';
@@ -107,5 +111,6 @@ export const selectMovies = (state: RootState) => state.movies.movies;
 export const selectMoviesStatus = (state: RootState) => state.movies.status;
 export const selectMoviesError = (state: RootState) => state.movies.error;
 export const selectSelectedMovie = (state: RootState) => state.movies.selectedMovie;
+export const selectMoviesMetaData = (state: RootState) => state.movies.metaData;
 
 export default moviesSlice.reducer;

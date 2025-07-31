@@ -1,8 +1,13 @@
 export interface MetaData {
-    pageNumber: number;
-    pageSize: number;
-    totalItems: number;
+    currentPage: number;
     totalPages: number;
-    hasNextPage: boolean;
-    hasPreviousPage: boolean;
+    pageSize: number;
+    totalCount: number;
+    hasNextPage?: boolean;
+    hasPreviousPage?: boolean;
+}
+
+export interface PagedList<T> {
+    items: T[];
+    metaData: MetaData;
 }
