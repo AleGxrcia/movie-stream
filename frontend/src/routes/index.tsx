@@ -11,6 +11,10 @@ import ManageMoviesPage from "../pages/ManageMoviesPage";
 import CreateMoviePage from "../features/movies/pages/CreateMoviePage";
 import MovieDetailsPage from "../features/movies/pages/MovieDetailsPage";
 import EditMoviePage from "../features/movies/pages/EditMoviePage";
+import ManageGenresPage from "../features/genres/pages/ManageGenresPage";
+import ManageProductionCompaniesPage from "../features/productionCompanies/pages/ManageProductionCompaniesPage";
+import SaveGenrePage from "../features/genres/pages/SaveGenrePage";
+import SaveProductionCompanyPage from "../features/productionCompanies/pages/SaveProductionCompanyPage";
 
 const router = createBrowserRouter([
     {
@@ -27,6 +31,12 @@ const router = createBrowserRouter([
             { path: 'movies/edit/:id', element: <EditMoviePage /> },
             { path: 'movies', element: <MoviesListPage /> },
             { path: 'movies/:id', element: <MovieDetailsPage /> },
+            { path: 'manage-genres', element: <ManageGenresPage /> },
+            { path: 'genres/create', element: <SaveGenrePage /> },
+            { path: 'genres/edit/:id', element: <SaveGenrePage /> },
+            { path: 'manage-production-companies', element: <ManageProductionCompaniesPage /> },
+            { path: 'production-companies/create', element: <SaveProductionCompanyPage /> },
+            { path: 'production-companies/edit/:id', element: <SaveProductionCompanyPage /> },
             {
                 element: <PrivateRoute allowedRoles={['User']} />,
                 children: [
