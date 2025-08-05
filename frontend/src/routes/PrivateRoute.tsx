@@ -4,9 +4,10 @@ import { Navigate, Outlet, useLocation } from "react-router-dom";
 
 interface PrivateRouteProps {
     allowedRoles?: string[];
+    children?: React.ReactNode;
 }
 
-export const PrivateRoute = ({ allowedRoles }: PrivateRouteProps) => {
+export const PrivateRoute = ({ allowedRoles, children }: PrivateRouteProps) => {
     const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
     const location = useLocation();
 
@@ -21,5 +22,5 @@ export const PrivateRoute = ({ allowedRoles }: PrivateRouteProps) => {
         return <Navigate to="/unauthorized" replace />;
     }
 
-    return <Outlet />;
+    return children ? <>{children}</> : <Outlet />;
 }
