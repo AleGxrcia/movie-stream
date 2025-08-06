@@ -26,7 +26,7 @@ const EditMoviePage = () => {
     };
 
     return (
-        <div className="container mx-auto px-4 py-8">
+        <div className="container mx-auto px-4 py-8 text-white">
             <h1 className="text-3xl font-bold mb-8">Editar Película</h1>
             {movie && <MovieForm onSubmit={handleSubmit} defaultValues={movie} />}
         </div>

@@ -15,8 +15,8 @@ const CreateMoviePage = () => {
     };
 
     return (
-        <div className="container mx-auto px-4 py-8">
-            <h1 className="text-3xl font-bold mb-8">Crear Película</h1>
+        <div className="container mx-auto px-4 py-8 text-white">
+            <h1 className="text-3xl font-bold mb-8"></h1>
             <MovieForm onSubmit={handleSubmit} />
         </div>
     );

@@ -46,7 +46,7 @@ const SaveGenrePage = () => {
     const placeholder = "Name";
 
     return (
-        <div className="container mx-auto px-4 py-8">
+        <div className="container mx-auto px-4 py-8 text-white">
             <SimpleForm 
                 onSubmit={handleSubmit} 
                 defaultValues={selectedGenre || { name: '' }}

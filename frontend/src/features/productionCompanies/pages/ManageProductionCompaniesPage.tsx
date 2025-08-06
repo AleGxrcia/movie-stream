@@ -64,7 +64,7 @@ const ManageProductionCompaniesPage = () => {
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
                     </div>
-                    <Link to="/production-companies/create" className="bg-blue-600 hover:bg-blue-700 font-bold py-2 px-4 rounded-lg transition-colors">
+                    <Link to="/admin/production-companies/create" className="bg-blue-600 hover:bg-blue-700 font-bold py-2 px-4 rounded-lg transition-colors">
                         Create Production Company
                     </Link>
                 </div>
@@ -87,7 +87,7 @@ const ManageProductionCompaniesPage = () => {
                                     <td className="px-6 py-4 whitespace-nowrap text-sm">{company.name}</td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
                                         <div className="flex items-center justify-center space-x-4">
-                                            <Link to={`/production-companies/edit/${company.id}`} className="text-green-400 hover:text-green-300">
+                                            <Link to={`/admin/production-companies/edit/${company.id}`} className="text-green-400 hover:text-green-300">
                                                 <FiEdit2 size={18} />
                                             </Link>
                                             <button onClick={() => handleDelete(company.id)} className="text-red-400 hover:text-red-300">

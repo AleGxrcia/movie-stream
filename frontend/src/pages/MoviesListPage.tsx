@@ -11,11 +11,11 @@ const MoviesListPage = () => {
   const status = useAppSelector(selectMoviesStatus);
   const error = useAppSelector(selectMoviesError);
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setpageSize] = useState(16);
+  const [pageSize, setPageSize] = useState(12);
 
   useEffect(() => {
     dispatch(fetchMoviesAsync({ pageNumber: currentPage, pageSize: pageSize }));
-  }, [dispatch, currentPage]);
+  }, [dispatch, currentPage, pageSize]);
   
   const handlePageChange = (newPage: number) => {
     setCurrentPage(newPage);
@@ -30,9 +30,9 @@ const MoviesListPage = () => {
   }
 
   return (
-    <div className="mx-auto px-0 py-8 w-[calc(100%-3%)] max-w-[1800px]">
-      <h1 className="text-3xl font-bold mb-8 px-[4%]">Películas</h1>
-      <div className="flex flex-wrap justify-center">
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-3xl font-bold mb-8">Películas</h1>
+      <div className="flex flex-wrap justify-center md:justify-start -mx-2">
         {movies.map((movie) => (
           <MovieCard key={movie.id} movie={movie} />
         ))}

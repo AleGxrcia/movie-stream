@@ -71,8 +71,17 @@ const Pagination = ({
     return (
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-4 py-3 bg-gray-900 rounded-lg shadow-sm border border-gray-800">
             {/* Contador de items */}
-            <div className="text-sm text-gray-300">
-                Showing <span className="font-medium text-white">{startCount.toLocaleString()}</span> to <span className="font-medium text-white">{endCount.toLocaleString()}</span> of <span className="font-medium text-white">{totalItems.toLocaleString()}</span> results
+             <div className="text-sm text-gray-300">
+                Showing{' '}
+                {startCount === endCount ? (
+                    <span className="font-medium text-white">{startCount.toLocaleString()}</span>
+                ) : (
+                    <>
+                        <span className="font-medium text-white">{startCount.toLocaleString()}</span> to{' '}
+                        <span className="font-medium text-white">{endCount.toLocaleString()}</span>
+                    </>
+                )}
+                {' '}of <span className="font-medium text-white">{totalItems.toLocaleString()}</span> results
             </div>
 
             {/* Controles de paginación */}

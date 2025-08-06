@@ -40,6 +40,9 @@ export const NavBar = () => {
           <div className="flex items-center space-x-4">
             {isAuthenticated ? (
               <>
+                {(user?.roles.includes('Admin') || user?.roles.includes('ContentManager')) && (
+                  <Link to="/admin" className="text-gray-300 hover:text-white transition-colors px-3 py-2 rounded-md text-sm font-medium">Admin Dashboard</Link>
+                )}
                 <span className="text-white font-semibold hidden sm:block">{user?.userName}</span>
                 <button onClick={handleLogout} className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition-colors">
                   Logout

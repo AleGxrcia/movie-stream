@@ -128,7 +128,7 @@ const MovieForm = ({ onSubmit, defaultValues }: MovieFormProps) => {
 
   return (
     <div className="max-w-4xl mx-auto p-6 bg-gray-900 rounded-lg shadow-md">
-      <h1 className="text-2xl font-bold mb-6 text-white">Add new item</h1>
+      <h1 className="text-2xl font-bold mb-6 text-white">Add new movie</h1>
       
       <form onSubmit={handleSubmit(handleFormSubmit, onInvalid)}>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

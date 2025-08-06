@@ -66,7 +66,7 @@ const ManageMoviesPage = () => {
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
                     </div>
-                    <Link to="/movies/create" className="bg-blue-600 hover:bg-blue-700 font-bold py-2 px-4 rounded-lg transition-colors">
+                    <Link to="/admin/movies/create" className="bg-blue-600 hover:bg-blue-700 font-bold py-2 px-4 rounded-lg transition-colors">
                         Create Movie
                     </Link>
                 </div>
@@ -101,10 +101,10 @@ const ManageMoviesPage = () => {
                                     <td className="px-6 py-4 whitespace-nowrap text-sm">{new Date(movie.releaseDate).toLocaleDateString()}</td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
                                         <div className="flex items-center justify-center space-x-4">
-                                            <Link to={`/movies/${movie.id}`} className="text-blue-400 hover:text-blue-300">
+                                            <Link to={`/admin/movies/${movie.id}`} className="text-blue-400 hover:text-blue-300">
                                                 <FiEye size={18} />
                                             </Link>
-                                            <Link to={`/movies/edit/${movie.id}`} className="text-green-400 hover:text-green-300">
+                                            <Link to={`/admin/movies/edit/${movie.id}`} className="text-green-400 hover:text-green-300">
                                                 <FiEdit2 size={18} />
                                             </Link>
                                             <button onClick={() => handleDelete(movie.id)} className="text-red-400 hover:text-red-300">
