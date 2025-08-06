@@ -5,13 +5,6 @@ import { refreshToken } from '../features/auth/services/authAPI';
 import { logout } from '../features/auth/slices/authSlice';
 
 export const setupInterceptors = (axiosInstance: AxiosInstance, store: any) => {
-    axiosInstance.interceptors.request.use((config) => {
-        const token = store.getState().auth.token;
-        if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
-        }
-        return config;
-    });
 
     axiosInstance.interceptors.response.use(
         (response: AxiosResponse<BaseBackendResponse>) => {

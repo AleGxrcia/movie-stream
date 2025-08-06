@@ -5,6 +5,7 @@ import { checkAuthStatus, loginUser, logoutUser, registerUser } from "../service
 interface AuthState {
     user: AuthData | null;
     isAuthenticated: boolean;
+    isCheckingAuth: boolean;
     status: 'idle' | 'loading' | 'succeeded' | 'failed';
     error: string | null;
 }
@@ -12,6 +13,7 @@ interface AuthState {
 const initialState: AuthState = {
     user: null,
     isAuthenticated: false,
+    isCheckingAuth: true,
     status: 'idle',
     error: null,
 }
@@ -38,20 +40,33 @@ const authSlice = createSlice({
     reducers: {},
     extraReducers: (builder) => {
         builder
+            .addCase(checkAuth.pending, (state) => {
+                state.isCheckingAuth = true;
+            })
+            .addCase(checkAuth.fulfilled, (state, action) => {
+                state.isAuthenticated = true;
+                state.user = action.payload.data;
+                state.isCheckingAuth = false;
+            })
+            .addCase(checkAuth.rejected, (state) => {
+                state.isAuthenticated = false;
+                state.user = null;
+                state.isCheckingAuth = false;
+            })
             .addCase(logout.fulfilled, (state) => {
                 state.user = null;
                 state.isAuthenticated = false;
             })
-            .addMatcher(isAnyOf(login.fulfilled, register.fulfilled, checkAuth.fulfilled), (state, action) => {
+            .addMatcher(isAnyOf(login.fulfilled, register.fulfilled), (state, action) => {
                 state.status = 'succeeded';
                 state.isAuthenticated = true;
                 state.user = action.payload.data;
             })
-            .addMatcher(isAnyOf(login.pending, register.pending, checkAuth.pending, logout.pending), (state) => {
+            .addMatcher(isAnyOf(login.pending, register.pending, logout.pending), (state) => {
                 state.status = 'loading';
                 state.error = null;
             })
-            .addMatcher(isAnyOf(login.rejected, register.rejected, checkAuth.rejected, logout.rejected), (state, action) => {
+            .addMatcher(isAnyOf(login.rejected, register.rejected, logout.rejected), (state, action) => {
                 state.status = 'failed';
                 state.isAuthenticated = false;
                 state.user = null;
