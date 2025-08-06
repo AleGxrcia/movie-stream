@@ -30,9 +30,9 @@ export const NavBar = () => {
             <Link to="/movies" className="text-gray-300 hover:text-white transition-colors">Movies</Link>
             {user?.roles.includes('Admin') && (
               <>
-                <Link to="/manage-movies" className="text-gray-300 hover:text-white transition-colors">Manage Movies</Link>
+                {/* <Link to="/manage-movies" className="text-gray-300 hover:text-white transition-colors">Manage Movies</Link>
                 <Link to="/manage-genres" className="text-gray-300 hover:text-white transition-colors">Manage Genres</Link>
-                <Link to="/manage-production-companies" className="text-gray-300 hover:text-white transition-colors">Manage Prod. Companies</Link>
+                <Link to="/manage-production-companies" className="text-gray-300 hover:text-white transition-colors">Manage Prod. Companies</Link> */}
               </>            
             )}
           </nav>

@@ -1,15 +1,12 @@
-import { useState } from "react";
 import { FiChevronLeft, FiFilm, FiHome, FiLogOut, FiMessageSquare, FiStar, FiUsers } from "react-icons/fi";
 import { NavLink } from "react-router-dom";
 
 const AdminSidebar = () => {
-  const [isPagesOpen, setIsPagesOpen] = useState(false);
-
   return (
-    <aside className="w-64 h-screen bg-[#0e0e0e] text-white flex flex-col">
+    <aside className="w-64 h-screen bg-[#101828] text-white flex flex-col">
       <div className="px-6 py-5 border-b border-gray-700">
         <h1 className="text-2xl font-bold tracking-wide">
-          FLIX <span className="text-blue-500">TV</span>
+          Movie<span className="text-blue-500">Stream</span>
         </h1>
       </div>
 
@@ -33,8 +30,7 @@ const AdminSidebar = () => {
         <SidebarItem icon={<FiFilm />} label="Movies" to="/admin/manage-movies" />
         <SidebarItem icon={<FiUsers />} label="Genres" to="/admin/manage-genres" />
         <SidebarItem icon={<FiMessageSquare />} label="Companies" to="/admin/manage-production-companies" />
-        <SidebarItem icon={<FiStar />} label="Reviews" to="/admin/reviews" />
-        <SidebarItem icon={<FiChevronLeft />} label="Back to FlixTV" to="/" />
+        <SidebarItem icon={<FiChevronLeft />} label="Back to Home" to="/" />
       </nav>
     </aside>
   );
